@@ -15,14 +15,14 @@ interface ChatStoreActions {
   addMessage: (message: ChatMessage) => void;
   removeMessage: (messageId: string) => void;
   clearMessages: () => void;
-  
+
   // Typing indicators
   setTyping: (userId: string, typing: boolean) => void;
-  
+
   // Unread count
   incrementUnread: () => void;
   clearUnread: () => void;
-  
+
   // Initialize with sample messages
   initializeSampleMessages: () => void;
 }
@@ -35,15 +35,15 @@ const sampleMessages: ChatMessage[] = [
     userId: 'user-charlie',
     userName: 'Charlie',
     userColor: '#8b5cf6',
-    content: 'Just updated the replica count to 3',
+    content: 'Je viens de mettre à jour le nombre de replicas à 3',
     timestamp: Date.now() - 300000,
   },
   {
     id: generateId(),
-    userId: 'user-alice',
-    userName: 'Alice',
+    userId: 'user-vivien',
+    userName: 'Vivien',
     userColor: '#10b981',
-    content: 'Looks good! The deployment config is ready.',
+    content: 'Parfait ! La configuration de déploiement est prête.',
     timestamp: Date.now() - 240000,
   },
   {
@@ -51,7 +51,7 @@ const sampleMessages: ChatMessage[] = [
     userId: 'user-bob',
     userName: 'Bob',
     userColor: '#f59e0b',
-    content: 'I will review the service configuration next.',
+    content: 'Je vais vérifier la configuration du service ensuite.',
     timestamp: Date.now() - 180000,
   },
 ];
@@ -72,14 +72,14 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>()(
             state.messages.shift();
           }
         });
-        
+
         // Sync with Logs: Add chat activity to the main log
         useLogsStore.getState().addUserLog(
           'chat',
           message.userId,
           message.userName,
           message.userColor,
-          'said:',
+          'a dit :',
           `"${message.content}"`
         );
       },

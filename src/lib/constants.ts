@@ -1,5 +1,5 @@
 // Network simulation constants
-export const MIN_LATENCY = 100;
+export const MIN_LATENCY = 1000;
 export const MAX_LATENCY = 1500;
 export const PACKET_LOSS_RATE = 0.01; // 1%
 export const DEFAULT_ACK_RATE = 99.9;
@@ -39,7 +39,7 @@ export const DEFAULT_CONTENT = `# Lancement du Projet : NoteMate V2
 // User presets for simulation
 export const PRESET_USERS = [
   {
-    id: 'user-alice',
+    id: 'user-vivien',
     name: 'Vivien',
     color: '#10b981', // emerald
     avatar: 'FLAT_DESIGN',

@@ -9,43 +9,47 @@ interface EditorStoreState {
   content: string;
   version: number;
   lastSync: number;
-  
+
   // Document info
   document: DocumentInfo;
-  
+
   // Cursors
   cursors: Record<string, Cursor>;
-  
-  // History for undo/redo
-  history: string[];
-  historyIndex: number;
-  
+
+  // History for local user (Vivien)
+  localUndoStack: { content: string; position: { lineNumber: number; column: number } }[];
+  localRedoStack: { content: string; position: { lineNumber: number; column: number } }[];
+  lastSnapshotTime: number; // For debouncing
+
   // UI state
   isDirty: boolean;
+  isSyncing: boolean;
 }
 
 interface EditorStoreActions {
   // Content actions
-  setContent: (content: string) => void;
-  applyOperation: (userId: string, position: { lineNumber: number; column: number }, text: string, type: 'insert' | 'delete') => void;
-  updateContent: (changes: { range: any; text: string }) => void;
-  
+  setContent: (content: string, isLocal?: boolean) => void;
+  applyOperation: (userId: string, position: { lineNumber: number; column: number }, text: string, type: 'insert' | 'delete', remoteVersion?: number) => void;
+
   // Document actions
   setDocumentName: (name: string) => void;
   updateDocumentSize: () => void;
-  
+
   // Cursor actions
   setCursor: (cursor: Cursor) => void;
   removeCursor: (userId: string) => void;
   updateCursorLatency: (userId: string, latency: number) => void;
-  
+
   // History actions
   undo: () => void;
   redo: () => void;
-  saveSnapshot: () => void;
-  
+
   // Sync actions
   markSynced: () => void;
+  setSyncing: (syncing: boolean) => void;
+
+  // Persistence
+  loadFromStorage: () => void;
 }
 
 const initialState: EditorStoreState = {
@@ -59,9 +63,11 @@ const initialState: EditorStoreState = {
     language: 'markdown',
   },
   cursors: {},
-  history: [DEFAULT_CONTENT],
-  historyIndex: 0,
+  localUndoStack: [],
+  localRedoStack: [],
+  lastSnapshotTime: 0,
   isDirty: false,
+  isSyncing: false,
 };
 
 export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
@@ -69,17 +75,57 @@ export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
     immer((set) => ({
       ...initialState,
 
+      loadFromStorage: () => {
+        const saved = localStorage.getItem('notemate_doc_content');
+        if (saved) {
+          set((state) => {
+            state.content = saved;
+            state.document.size = new Blob([saved]).size;
+            state.localUndoStack = []; // Reset on load
+            state.localRedoStack = [];
+          });
+        }
+      },
+
       // Content actions
-      setContent: (content) => {
+      setContent: (content, isLocal = true) => {
         set((state) => {
+          const now = Date.now();
+          const timeSinceLastSnapshot = now - state.lastSnapshotTime;
+          const contentDiffers = state.content !== content;
+
+          if (isLocal && contentDiffers) {
+            // Save to undo stack if > 1s since last save or logical break
+            const isLogicalBreak = content.length > state.content.length &&
+              (content.endsWith(' ') || content.endsWith('\n') || content.endsWith('.'));
+
+            if (timeSinceLastSnapshot > 1000 || isLogicalBreak || state.lastSnapshotTime === 0) {
+              const vivienCursor = state.cursors['user-vivien'];
+              state.localUndoStack.push({
+                content: state.content,
+                position: vivienCursor ? { ...vivienCursor.position } : { lineNumber: 1, column: 1 }
+              });
+              if (state.localUndoStack.length > 50) state.localUndoStack.shift();
+              state.lastSnapshotTime = now;
+              state.localRedoStack = []; // Clear redo on new atomic action
+            }
+          }
+
           state.content = content;
           state.isDirty = true;
           state.document.size = new Blob([content]).size;
+
+          if (isLocal) {
+            localStorage.setItem('notemate_doc_content', content);
+          }
         });
       },
 
-      applyOperation: (userId, position, text, type) => {
+      applyOperation: (userId, position, text, type, remoteVersion) => {
         set((state) => {
+          // Simplified OT: If remote version is behind, we might need transformation
+          // For this simulation, we'll just apply it and bump our version
+
           const lines = state.content.split('\n');
           const lineIdx = Math.min(position.lineNumber - 1, lines.length - 1);
           const line = lines[lineIdx] || '';
@@ -88,28 +134,54 @@ export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
           if (type === 'insert') {
             lines[lineIdx] = line.slice(0, colIdx) + text + line.slice(colIdx);
           } else if (type === 'delete') {
-            lines[lineIdx] = line.slice(0, Math.max(0, colIdx - text.length)) + line.slice(colIdx);
+            // Delete characters behind or at the cursor
+            const deleteCount = text.length || 1;
+            lines[lineIdx] = line.slice(0, Math.max(0, colIdx - deleteCount)) + line.slice(colIdx);
           }
 
           state.content = lines.join('\n');
-          state.version++;
+
+          // Collaborative History Update
+          const applyRemoteToStack = (stack: { content: string; position: { lineNumber: number; column: number } }[]) => {
+            for (let i = 0; i < stack.length; i++) {
+              const snapLines = stack[i].content.split('\n');
+              const sLineIdx = Math.min(position.lineNumber - 1, snapLines.length - 1);
+              const sLine = snapLines[sLineIdx] || '';
+              const sColIdx = Math.min(position.column - 1, sLine.length);
+
+              if (type === 'insert') {
+                snapLines[sLineIdx] = sLine.slice(0, sColIdx) + text + sLine.slice(sColIdx);
+                // Adjust saved cursor horizontal position if on same line and after edit
+                if (stack[i].position.lineNumber === position.lineNumber && stack[i].position.column >= position.column) {
+                  stack[i].position.column += text.length;
+                }
+              } else if (type === 'delete') {
+                const deleteCount = text.length || 1;
+                snapLines[sLineIdx] = sLine.slice(0, Math.max(0, sColIdx - deleteCount)) + sLine.slice(sColIdx);
+                if (stack[i].position.lineNumber === position.lineNumber && stack[i].position.column >= position.column) {
+                  stack[i].position.column = Math.max(1, stack[i].position.column - deleteCount);
+                }
+              }
+              stack[i].content = snapLines.join('\n');
+            }
+          };
+
+          if (userId !== 'user-vivien') {
+            applyRemoteToStack(state.localUndoStack);
+            applyRemoteToStack(state.localRedoStack);
+          }
+          state.version = Math.max(state.version, (remoteVersion || 0)) + 1;
           state.isDirty = true;
           state.document.size = new Blob([state.content]).size;
-          
+
           // Update the user's cursor position after typing
           const cursor = state.cursors[userId];
           if (cursor) {
             cursor.position.column += text.length;
           }
-        });
-      },
 
-      updateContent: (changes) => {
-        set((state) => {
-          // Simple text replacement - in real app would use proper diff
-          state.content = changes.text;
-          state.isDirty = true;
-          state.document.size = new Blob([state.content]).size;
+          // Persistence
+          localStorage.setItem('notemate_doc_content', state.content);
         });
       },
 
@@ -129,6 +201,11 @@ export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
       // Cursor actions
       setCursor: (cursor) => {
         set((state) => {
+          // If the cursor is from Vivien, we update it immediately
+          if (cursor.userId === 'user-vivien') {
+            state.cursors[cursor.userId] = cursor;
+            return;
+          }
           state.cursors[cursor.userId] = cursor;
         });
       },
@@ -151,43 +228,40 @@ export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
       // History actions
       undo: () => {
         set((state) => {
-          if (state.historyIndex > 0) {
-            state.historyIndex--;
-            state.content = state.history[state.historyIndex];
+          if (state.localUndoStack.length > 0) {
+            const snap = state.localUndoStack.pop()!;
+            const vivienCursor = state.cursors['user-vivien'];
+            state.localRedoStack.push({
+              content: state.content,
+              position: vivienCursor ? { ...vivienCursor.position } : { lineNumber: 1, column: 1 }
+            });
+            state.content = snap.content;
+            if (state.cursors['user-vivien']) {
+              state.cursors['user-vivien'].position = snap.position;
+            }
             state.isDirty = true;
             state.version++;
+            localStorage.setItem('notemate_doc_content', snap.content);
           }
         });
       },
 
       redo: () => {
         set((state) => {
-          if (state.historyIndex < state.history.length - 1) {
-            state.historyIndex++;
-            state.content = state.history[state.historyIndex];
+          if (state.localRedoStack.length > 0) {
+            const snap = state.localRedoStack.pop()!;
+            const vivienCursor = state.cursors['user-vivien'];
+            state.localUndoStack.push({
+              content: state.content,
+              position: vivienCursor ? { ...vivienCursor.position } : { lineNumber: 1, column: 1 }
+            });
+            state.content = snap.content;
+            if (state.cursors['user-vivien']) {
+              state.cursors['user-vivien'].position = snap.position;
+            }
             state.isDirty = true;
             state.version++;
-          }
-        });
-      },
-
-      saveSnapshot: () => {
-        set((state) => {
-          // Only save if the current content is different from the last snapshot
-          if (state.content === state.history[state.historyIndex]) return;
-
-          // Remove any future history if we're not at the end
-          if (state.historyIndex < state.history.length - 1) {
-            state.history = state.history.slice(0, state.historyIndex + 1);
-          }
-          
-          state.history.push(state.content);
-          state.historyIndex++;
-          
-          // Limit history size to 50 versions
-          if (state.history.length > 50) {
-            state.history.shift();
-            state.historyIndex--;
+            localStorage.setItem('notemate_doc_content', snap.content);
           }
         });
       },
@@ -197,7 +271,12 @@ export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
         set((state) => {
           state.lastSync = Date.now();
           state.isDirty = false;
-          state.version++;
+        });
+      },
+
+      setSyncing: (syncing) => {
+        set((state) => {
+          state.isSyncing = syncing;
         });
       },
     })),

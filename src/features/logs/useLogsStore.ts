@@ -14,14 +14,14 @@ interface LogsStoreActions {
   addSystemLog: (message: string, details?: string) => void;
   addUserLog: (type: LogType, userId: string, userName: string, userColor: string, message: string, details?: string) => void;
   clearLogs: () => void;
-  
+
   // Filtering
   toggleFilter: (type: LogType) => void;
   clearFilters: () => void;
-  
+
   // Get filtered logs
   getFilteredLogs: () => LogEntry[];
-  
+
   // Initialize with sample logs
   initializeSampleLogs: () => void;
 }
@@ -36,10 +36,10 @@ export const useLogsStore = create<LogsStoreState & LogsStoreActions>()(
 
       addLog: (log) => {
         set((state) => {
-          state.logs.unshift(log); // Add to beginning
+          state.logs.push(log); // Add to end (chronological order)
           // Keep only last 200 logs
           if (state.logs.length > 200) {
-            state.logs.pop();
+            state.logs.shift(); // Remove from beginning
           }
         });
       },
@@ -105,22 +105,15 @@ export const useLogsStore = create<LogsStoreState & LogsStoreActions>()(
         const sampleLogs: LogEntry[] = [
           {
             id: generateId(),
-            type: 'edit',
-            userId: 'user-charlie',
-            userName: 'Charlie',
-            userColor: '#8b5cf6',
-            message: 'inserted "selector"',
-            details: 'line 8:12',
-            timestamp: now - 5000,
+            type: 'sync',
+            message: 'Synchronisation initiale du document terminée',
+            timestamp: now - 200000,
           },
           {
             id: generateId(),
-            type: 'edit',
-            userId: 'user-alice',
-            userName: 'Alice',
-            userColor: '#10b981',
-            message: 'changed value "replicas: 1" to "replicas: 3"',
-            timestamp: now - 12000,
+            type: 'system',
+            message: 'Snapshot v2.3.9 sauvegardé avec succès',
+            timestamp: now - 65000,
           },
           {
             id: generateId(),
@@ -128,23 +121,30 @@ export const useLogsStore = create<LogsStoreState & LogsStoreActions>()(
             userId: 'user-bob',
             userName: 'Bob',
             userColor: '#f59e0b',
-            message: 'connected to session',
+            message: 'connecté à la session',
             timestamp: now - 40000,
           },
           {
             id: generateId(),
-            type: 'system',
-            message: 'Snapshot v2.3.9 saved successfully',
-            timestamp: now - 65000,
+            type: 'edit',
+            userId: 'user-vivien',
+            userName: 'Vivien',
+            userColor: '#10b981',
+            message: 'a modifié la valeur "replicas: 1" en "replicas: 3"',
+            timestamp: now - 12000,
           },
           {
             id: generateId(),
-            type: 'sync',
-            message: 'Initial document sync completed',
-            timestamp: now - 200000,
+            type: 'edit',
+            userId: 'user-charlie',
+            userName: 'Charlie',
+            userColor: '#8b5cf6',
+            message: 'a inséré "selector"',
+            details: 'ligne 8:12',
+            timestamp: now - 5000,
           },
         ];
-        
+
         set((state) => {
           state.logs = sampleLogs;
         });

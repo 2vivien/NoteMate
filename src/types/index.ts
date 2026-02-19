@@ -35,7 +35,7 @@ export interface ChatMessage {
 }
 
 // Log types
-export type LogType = 'edit' | 'cursor' | 'sync' | 'connect' | 'disconnect' | 'system';
+export type LogType = 'edit' | 'cursor' | 'sync' | 'connect' | 'disconnect' | 'system' | 'chat';
 
 export interface LogEntry {
   id: string;

@@ -1,41 +1,24 @@
-import { MIN_LATENCY, MAX_LATENCY, PACKET_LOSS_RATE } from './constants';
+export const getRandomLatency = (min = 100, max = 1500) => {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+};
 
-/**
- * Simulates network latency with random delay between MIN_LATENCY and MAX_LATENCY
- * @returns Promise that resolves after the simulated latency
- */
-export function simulateLatency(): Promise<number> {
-  const latency = MIN_LATENCY + Math.random() * (MAX_LATENCY - MIN_LATENCY);
-  
-  return new Promise((resolve) => {
+export const simulateNetwork = <T>(
+  fn: () => T,
+  options: { latency?: number; packetLoss?: number } = {}
+): Promise<T> => {
+  const { latency = getRandomLatency(), packetLoss = 0.01 } = options;
+
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
-      resolve(Math.round(latency));
+      const isDropped = Math.random() < packetLoss;
+      if (isDropped) {
+        reject(new Error('Packet dropped'));
+      } else {
+        resolve(fn());
+      }
     }, latency);
   });
-}
-
-/**
- * Simulates packet loss based on PACKET_LOSS_RATE
- * @returns true if packet should be dropped, false otherwise
- */
-export function shouldDropPacket(): boolean {
-  return Math.random() < PACKET_LOSS_RATE;
-}
-
-/**
- * Simulates a network request with latency and potential packet loss
- * @param fn Function to execute if packet is not dropped
- * @returns Promise that resolves with the result or rejects if packet is dropped
- */
-export async function simulateNetwork<T>(fn: () => T): Promise<T> {
-  await simulateLatency();
-  
-  if (shouldDropPacket()) {
-    throw new Error('Packet lost');
-  }
-  
-  return fn();
-}
+};
 
 /**
  * Simulates a network request with latency but no packet loss
@@ -44,16 +27,12 @@ export async function simulateNetwork<T>(fn: () => T): Promise<T> {
  * @returns Promise that resolves with the result after latency
  */
 export async function simulateNetworkReliable<T>(fn: () => T): Promise<T> {
-  await simulateLatency();
-  return fn();
-}
-
-/**
- * Gets a random latency value without waiting
- * @returns Random latency in ms
- */
-export function getRandomLatency(): number {
-  return Math.round(MIN_LATENCY + Math.random() * (MAX_LATENCY - MIN_LATENCY));
+  const latency = getRandomLatency();
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(fn());
+    }, latency);
+  });
 }
 
 /**

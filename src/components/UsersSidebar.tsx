@@ -61,9 +61,8 @@ export function UsersSidebar() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className={`flex items-center justify-between group ${
-                    user.status === 'idle' ? 'opacity-75' : ''
-                  }`}
+                  className={`flex items-center justify-between group ${user.status === 'idle' ? 'opacity-75' : ''
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     {/* Avatar Flat Design with status indicator */}
@@ -83,19 +82,15 @@ export function UsersSidebar() {
                     {/* User info */}
                     <div>
                       <p className="text-sm font-semibold text-text-main dark:text-slate-100 flex items-center gap-1">
-                        {user.name}
-                        {isCurrentUser && (
-                          <span className="text-[10px] text-text-muted">(vous)</span>
-                        )}
+                        {isCurrentUser ? 'Vous' : user.name}
                       </p>
                       <p
-                        className={`text-[10px] font-mono italic ${
-                          isTyping
+                        className={`text-[10px] font-mono italic ${isTyping
                             ? 'text-emerald-600 dark:text-emerald-500'
                             : user.status === 'idle'
-                            ? 'text-text-muted dark:text-slate-500'
-                            : 'text-text-muted dark:text-slate-500'
-                        }`}
+                              ? 'text-text-muted dark:text-slate-500'
+                              : 'text-text-muted dark:text-slate-500'
+                          }`}
                       >
                         {isTyping ? (
                           <span className="flex items-center gap-1">

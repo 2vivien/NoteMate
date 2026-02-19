@@ -17,6 +17,7 @@ const logTypeColors: Record<LogType, string> = {
   connect: 'text-amber-600 dark:text-amber-400',
   disconnect: 'text-red-600 dark:text-red-400',
   system: 'text-primary',
+  chat: 'text-sky-600 dark:text-sky-400',
 };
 
 function formatTime(timestamp: number): string {
@@ -30,28 +31,31 @@ function formatRelativeTime(timestamp: number): string {
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
 
-  if (seconds < 60) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return new Date(timestamp).toLocaleDateString();
+  if (seconds < 60) {
+    return 'just now';
+  } else if (minutes < 3600) {
+    return `${Math.floor(minutes)}m`;
+  } else {
+    return `${Math.floor(hours)}h`;
+  }
 }
 
 export function LogsChatPanel() {
   const [activeTab, setActiveTab] = useState('logs');
   const [messageInput, setMessageInput] = useState('');
-  
+
   const logs = useLogsStore((state) => state.logs);
-  const addLog = useLogsStore((state) => state.addUserLog);
   const messages = useChatStore((state) => state.messages);
   const unreadCount = useChatStore((state) => state.unreadCount);
   const clearUnread = useChatStore((state) => state.clearUnread);
   const addMessage = useChatStore((state) => state.addMessage);
-  
+
   const users = useUsersStore((state) => state.users);
   const setUserTyping = useUsersStore((state) => state.setUserTyping);
   const currentUserId = useUsersStore((state) => state.currentUserId);
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  const logsScrollRef = useRef<HTMLDivElement>(null);
 
   // Clear unread when switching to chat tab
   useEffect(() => {
@@ -66,6 +70,13 @@ export function LogsChatPanel() {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
   }, [messages, activeTab]);
+
+  // Auto-scroll logs to bottom
+  useEffect(() => {
+    if (logsScrollRef.current && activeTab === 'logs') {
+      logsScrollRef.current.scrollTop = logsScrollRef.current.scrollHeight;
+    }
+  }, [logs, activeTab]);
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !currentUserId) return;
@@ -94,21 +105,6 @@ export function LogsChatPanel() {
     if (currentUserId) {
       if (val.trim()) {
         setUserTyping(currentUserId, true);
-        
-        // Log "Vivien écrit un message" if not already logged recently
-        if (!(window as any).vivienChatLogTimeout) {
-           addLog(
-            'chat',
-            currentUserId,
-            'Vivien',
-            '#10b981',
-            'écrit un message...',
-            ''
-          );
-          (window as any).vivienChatLogTimeout = setTimeout(() => {
-            (window as any).vivienChatLogTimeout = null;
-          }, 5000);
-        }
       } else {
         setUserTyping(currentUserId, false);
       }
@@ -151,13 +147,13 @@ export function LogsChatPanel() {
         {/* Activity Log content */}
         <TabsContent value="logs" className="flex-1 overflow-hidden m-0 mt-0 data-[state=inactive]:hidden">
           <ScrollArea className="h-full">
-            <div className="p-3 space-y-2">
+            <div ref={logsScrollRef} className="p-3 space-y-2">
               <AnimatePresence initial={false}>
                 {logs.map((log) => (
                   <LogItem key={log.id} log={log} />
                 ))}
               </AnimatePresence>
-              
+
               {logs.length === 0 && (
                 <div className="text-center text-text-muted dark:text-slate-500 text-sm py-8">
                   Aucune activité pour le moment
@@ -185,7 +181,7 @@ export function LogsChatPanel() {
                 );
               })}
             </AnimatePresence>
-            
+
             {messages.length === 0 && (
               <div className="text-center text-text-muted dark:text-slate-500 text-sm py-8">
                 Aucun message
@@ -295,15 +291,17 @@ function ChatMessageItem({ message, isCurrentUser, showAvatar }: ChatMessageItem
             className="text-[10px] font-medium mb-0.5"
             style={{ color: message.userColor }}
           >
-            {message.userName}
+            {isCurrentUser ? 'Vous' : message.userName}
           </span>
         )}
         <div
-          className={`px-3 py-1.5 rounded-lg text-xs ${
-            isCurrentUser
-              ? 'bg-primary text-white'
-              : 'bg-gray-100 dark:bg-border-dark text-text-main dark:text-slate-200'
-          }`}
+          className={`px-3 py-1.5 rounded-lg text-xs transition-colors ${isCurrentUser
+            ? 'bg-primary text-white shadow-sm'
+            : 'text-text-main dark:text-slate-100 border border-black/5 dark:border-white/5'
+            }`}
+          style={!isCurrentUser ? {
+            backgroundColor: `${message.userColor}20`, // 20 = 12.5% opacity for pastel effect
+          } : undefined}
         >
           {message.content}
         </div>

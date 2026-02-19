@@ -3,6 +3,7 @@ import Editor from '@monaco-editor/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEditorStore } from '@/features/editor/useEditorStore';
 import { useUsersStore } from '@/features/users/useUsersStore';
+import { useLogsStore } from '@/features/logs/useLogsStore';
 import { useNetworkStore } from '@/features/network/useNetworkStore';
 import { useThemeStore } from '@/features/theme/useThemeStore';
 import { Zap } from 'lucide-react';
@@ -14,19 +15,19 @@ export function EditorPanel() {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const monacoRef = useRef<typeof import('monaco-editor') | null>(null);
   const decorationsRef = useRef<Map<string, string[]>>(new Map());
-  
+
   const content = useEditorStore((state) => state.content);
   const version = useEditorStore((state) => state.version);
   const setContent = useEditorStore((state) => state.setContent);
-  const saveSnapshot = useEditorStore((state) => state.saveSnapshot);
   const cursors = useEditorStore((state) => state.cursors);
-  
+
   const users = useUsersStore((state) => state.users);
   const latency = useNetworkStore((state) => state.latency);
   const theme = useThemeStore((state) => state.theme);
-  
+
   const [isEditorReady, setIsEditorReady] = useState(false);
-  const snapshotTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const vivienTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const vivienLogTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Handle editor mount
   const handleEditorDidMount = useCallback((editor: editor.IStandaloneCodeEditor, monaco: typeof import('monaco-editor')) => {
@@ -50,60 +51,54 @@ export function EditorPanel() {
     });
 
     // Add change listener for user input
-    editor.onDidChangeModelContent((event) => {
+    editor.onDidChangeModelContent((_event) => {
       const newValue = editor.getValue();
       if (newValue !== useEditorStore.getState().content) {
-        setContent(newValue);
-        
-        // Debounce snapshotting for history
-        if (snapshotTimeoutRef.current) clearTimeout(snapshotTimeoutRef.current);
-        snapshotTimeoutRef.current = setTimeout(() => {
-          saveSnapshot();
-        }, 1000);
-        
-        // --- Alice's Typing Logic ---
-        const aliceId = 'user-alice';
+        setContent(newValue, true); // true for local change
+
+        // --- Vivien's Typing Logic ---
+        const vivienId = 'user-vivien';
         const userStore = useUsersStore.getState();
-        
-        // Set Alice as typing in the store
-        userStore.setUserTyping(aliceId, true);
-        
+
+        // Set Vivien as typing in the store
+        userStore.setUserTyping(vivienId, true);
+
         // Clear typing status after 2 seconds of inactivity
-        if ((window as any).aliceTypingTimeout) clearTimeout((window as any).aliceTypingTimeout);
-        (window as any).aliceTypingTimeout = setTimeout(() => {
-          useUsersStore.getState().setUserTyping(aliceId, false);
+        if (vivienTypingTimeoutRef.current) clearTimeout(vivienTypingTimeoutRef.current);
+        vivienTypingTimeoutRef.current = setTimeout(() => {
+          useUsersStore.getState().setUserTyping(vivienId, false);
         }, 2000);
-        
-        // Add log for Alice's edit (debounced)
-        if (!(window as any).aliceLogTimeout) {
-           useLogsStore.getState().addUserLog(
+
+        // Add log for Vivien's edit (debounced)
+        if (!vivienLogTimeoutRef.current) {
+          useLogsStore.getState().addUserLog(
             'edit',
-            aliceId,
-            'Alice',
+            vivienId,
+            'Vivien',
             '#10b981',
-            'is updating the notes',
-            `at line ${editor.getPosition()?.lineNumber}`
+            'a mis à jour les notes',
+            `à la ligne ${editor.getPosition()?.lineNumber}`
           );
-          userStore.incrementActions(aliceId);
-          
-          (window as any).aliceLogTimeout = setTimeout(() => {
-            (window as any).aliceLogTimeout = null;
+          userStore.incrementActions(vivienId);
+
+          vivienLogTimeoutRef.current = setTimeout(() => {
+            vivienLogTimeoutRef.current = null;
           }, 4000);
         }
       }
     });
-    
-    // Track Alice's cursor position in real-time
+
+    // Track Vivien's cursor position in real-time
     editor.onDidChangeCursorPosition((e) => {
-      const aliceId = 'user-alice';
+      const vivienId = 'user-vivien';
       useEditorStore.getState().setCursor({
-        userId: aliceId,
+        userId: vivienId,
         position: { lineNumber: e.position.lineNumber, column: e.position.column },
         latency: 0,
         visible: true
       });
     });
-  }, [setContent, saveSnapshot]);
+  }, [setContent]);
 
   // Update cursor decorations
   useEffect(() => {
@@ -118,10 +113,10 @@ export function EditorPanel() {
     });
     decorationsRef.current.clear();
 
-    // Add new cursor decorations for each user EXCEPT Alice (she has her native cursor)
+    // Add new cursor decorations for each user EXCEPT Vivien (he has his native cursor)
     Object.values(cursors).forEach((cursor) => {
-      if (cursor.userId === 'user-alice') return; // Don't decorate local user twice
-      
+      if (cursor.userId === 'user-vivien') return;
+
       const user = users.find((u) => u.id === cursor.userId);
       if (!user || !cursor.visible) return;
 
@@ -131,8 +126,8 @@ export function EditorPanel() {
         range: new monaco.Range(lineNumber, column, lineNumber, column),
         options: {
           className: `cursor-decoration-${user.id}`,
-          beforeContentClassName: `cursor-before-${user.id}`,
-          afterContentClassName: `cursor-after-${user.id}`,
+          // We don't use beforeContent here anymore to avoid duplicate labels
+          // as we use the SimulatedCursor component for smooth labels.
           overviewRuler: {
             color: user.color,
             position: monaco.editor.OverviewRulerLane.Center,
@@ -151,14 +146,14 @@ export function EditorPanel() {
     // Add cursor styles dynamically
     const style = document.createElement('style');
     style.id = 'monaco-cursor-styles';
-    
+
     let cursorStyles = '';
     Object.values(cursors).forEach((cursor) => {
-      if (cursor.userId === 'user-alice') return;
-      
+      if (cursor.userId === 'user-vivien') return;
+
       const user = users.find((u) => u.id === cursor.userId);
       if (!user) return;
-      
+
       cursorStyles += `
         .cursor-decoration-${user.id} {
           border-left: 2px solid ${user.color} !important;
@@ -179,9 +174,9 @@ export function EditorPanel() {
         }
       `;
     });
-    
+
     style.textContent = cursorStyles;
-    
+
     const oldStyle = document.getElementById('monaco-cursor-styles');
     if (oldStyle) oldStyle.remove();
     if (cursorStyles) document.head.appendChild(style);
@@ -227,7 +222,7 @@ export function EditorPanel() {
           className="absolute bottom-6 right-6 flex items-center gap-2 bg-white/90 dark:bg-sidebar-dark/90 backdrop-blur border border-border-light dark:border-border-dark px-3 py-1.5 rounded-full text-xs text-text-muted dark:text-slate-400 shadow-sm z-20"
         >
           <Zap className="w-4 h-4 text-primary" />
-          <span>Network Latency:</span>
+          <span>Latence Réseau :</span>
           <motion.span
             key={latency}
             initial={{ opacity: 0, y: -5 }}
@@ -251,7 +246,7 @@ export function EditorPanel() {
               user={user}
               cursor={cursor}
               editor={editorRef.current!}
-              isLocalUser={user.id === 'user-alice'}
+              isLocalUser={user.id === 'user-vivien'}
             />
           );
         })}
@@ -283,8 +278,8 @@ function SimulatedCursor({ user, cursor, editor, isLocalUser }: SimulatedCursorP
       const pos = editor.getScrolledVisiblePosition(cursor.position);
       if (pos) {
         // Precise alignment using Monaco's native coordinates
-        setPixelPos({ 
-          top: pos.top, 
+        setPixelPos({
+          top: pos.top,
           left: pos.left + (isLocalUser ? 0 : 0) // Adjustment
         });
       }
@@ -303,7 +298,7 @@ function SimulatedCursor({ user, cursor, editor, isLocalUser }: SimulatedCursorP
   return (
     <motion.div
       initial={{ opacity: 0 }}
-      animate={{ 
+      animate={{
         opacity: 1,
         top: pixelPos.top,
         left: pixelPos.left,
@@ -323,16 +318,17 @@ function SimulatedCursor({ user, cursor, editor, isLocalUser }: SimulatedCursorP
           style={{ backgroundColor: user.color }}
         />
       )}
-      
-      {/* Cursor label */}
+
       <motion.div
         initial={{ opacity: 0, y: -5 }}
         animate={{ opacity: 1, y: 0 }}
-        className="absolute -top-6 left-0 px-1.5 py-0.5 rounded text-white text-[9px] flex items-center gap-1 shadow-md z-10 whitespace-nowrap font-medium"
-        style={{ backgroundColor: user.color }}
+        className="absolute -top-6 left-0 px-1.5 py-0.5 rounded text-white text-[9px] flex items-center gap-1 shadow-md z-10 whitespace-nowrap font-bold"
+        style={{ backgroundColor: user.id === 'user-vivien' ? '#10b981' : user.color }}
       >
-        {user.name} {isLocalUser ? '(You)' : ''}
-        {!isLocalUser && <span className="opacity-70 font-mono text-[8px]">{cursor.latency}ms</span>}
+        {user.id === 'user-vivien' ? 'Vous' : user.name}
+        <span className="opacity-90 font-mono text-[8.5px] bg-black/20 px-1 rounded-sm">
+          {user.id === 'user-vivien' ? 1200 : cursor.latency}ms
+        </span>
       </motion.div>
     </motion.div>
   );

@@ -14,18 +14,18 @@ interface UsersStoreActions {
   setUsers: (users: User[]) => void;
   addUser: (user: User) => void;
   removeUser: (userId: string) => void;
-  
+
   // User status
   setUserStatus: (userId: string, status: UserStatus) => void;
   setUserTyping: (userId: string, typing: boolean) => void;
-  
+
   // Actions counter
   incrementActions: (userId: string) => void;
   setActionsCount: (userId: string, count: number) => void;
-  
+
   // Current user
   setCurrentUser: (userId: string) => void;
-  
+
   // Initialize with preset users
   initializePresetUsers: () => void;
 }
@@ -112,7 +112,7 @@ export const useUsersStore = create<UsersStoreState & UsersStoreActions>()(
       initializePresetUsers: () => {
         set((state) => {
           state.users = PRESET_USERS.map(createInitialUser);
-          state.currentUserId = 'user-alice'; // Default current user
+          state.currentUserId = 'user-vivien'; // Default current user
         });
       },
     })),
