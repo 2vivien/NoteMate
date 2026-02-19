@@ -9,7 +9,9 @@ import {
   AlignLeft,
   Code,
   Wifi,
-  Download
+  Download,
+  AlertTriangle,
+  Activity
 } from 'lucide-react';
 import { useLogsStore } from '@/features/logs/useLogsStore';
 
@@ -32,11 +34,15 @@ export function FooterConsole() {
   const docInfo = useEditorStore((state) => state.document);
 
   const latency = useNetworkStore((state) => state.latency);
+  const packetLoss = useNetworkStore((state) => state.packetLoss);
+  const ackRate = useNetworkStore((state) => state.ackRate);
+  const isConnected = useNetworkStore((state) => state.isConnected);
   const simulatedLag = useNetworkStore((state) => state.simulatedLag);
   const setSimulatedLag = useNetworkStore((state) => state.setSimulatedLag);
   const session = useNetworkStore((state) => state.session);
 
   const [displayDuration, setDisplayDuration] = useState(session.duration);
+  const [packetLossCount, setPacketLossCount] = useState(0);
 
   // Update duration display every second
   useEffect(() => {
@@ -46,6 +52,20 @@ export function FooterConsole() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Simulate random packet loss events
+  useEffect(() => {
+    if (!isConnected) return;
+
+    const lossInterval = setInterval(() => {
+      // 1% chance of packet loss every 5 seconds
+      if (Math.random() < 0.01) {
+        setPacketLossCount((prev) => prev + 1);
+      }
+    }, 5000);
+
+    return () => clearInterval(lossInterval);
+  }, [isConnected]);
 
   // Sync with store duration
   useEffect(() => {
@@ -65,8 +85,28 @@ export function FooterConsole() {
           </span>
         </div>
 
+        {/* Network status indicator */}
+        <div className="flex items-center gap-1.5">
+          <Activity className={`w-2.5 h-2.5 md:w-3 md:h-3 ${isConnected ? 'text-emerald-500' : 'text-red-500'}`} />
+          <span className="text-primary font-bold hidden sm:inline">RÉSEAU:</span>
+          <span className={`font-bold ${isConnected ? 'text-emerald-500' : 'text-red-500'}`}>
+            {isConnected ? 'OK' : 'HORS LIGNE'}
+          </span>
+        </div>
+
+        {/* Packet loss indicator */}
+        {isConnected && (
+          <div className="hidden md:flex items-center gap-1.5">
+            <AlertTriangle className={`w-2.5 h-2.5 ${packetLossCount > 0 ? 'text-amber-500' : 'text-gray-400'}`} />
+            <span className="text-primary font-bold">PERTES:</span>
+            <span className={`font-bold ${packetLossCount > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
+              {packetLossCount} paquet{packetLossCount > 1 ? 's' : ''}
+            </span>
+          </div>
+        )}
+
         {/* Sync status & Mode - Hidden on mobile */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <Wifi className="w-3 h-3 text-primary" />
             <span className="text-primary font-bold">SYNCHRO:</span>

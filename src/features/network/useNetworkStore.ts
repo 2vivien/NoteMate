@@ -46,7 +46,7 @@ export const useNetworkStore = create<NetworkStoreState & NetworkStoreActions>()
     immer((set) => ({
       isConnected: true,
       isSyncing: false,
-      latency: 120,
+      latency: 500,
       packetLoss: 0.01,
       ackRate: 99.0,
       session: {

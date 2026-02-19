@@ -69,7 +69,7 @@ export function useSimulatedUsers() {
 
   const performWithNetwork = useCallback(async (botId: string, action: () => Promise<void> | void) => {
     try {
-      const latency = await simulateNetwork(() => getRandomLatency(1000, 1500), {
+      const latency = await simulateNetwork(() => getRandomLatency(100, 1500), {
         packetLoss: 0.01
       });
       setLatency(latency);
@@ -93,7 +93,7 @@ export function useSimulatedUsers() {
         useEditorStore.getState().setCursor({
           userId: botId,
           position: useEditorStore.getState().cursors[botId]?.position || { lineNumber: 1, column: 1 },
-          latency: Math.floor(1000 + Math.random() * 500),
+          latency: Math.floor(100 + Math.random() * 1400),
           visible: true
         });
       }, 1500);
@@ -135,7 +135,7 @@ export function useSimulatedUsers() {
     editor.setCursor({
       userId: botId,
       position: position,
-      latency: Math.floor(1000 + Math.random() * 500),
+      latency: Math.floor(100 + Math.random() * 1400),
       visible: true
     });
 
@@ -178,7 +178,7 @@ export function useSimulatedUsers() {
       editor.setCursor({
         userId: botId,
         position: { lineNumber: lineIdx + 1, column: 1 },
-        latency: Math.floor(1000 + Math.random() * 500),
+        latency: Math.floor(100 + Math.random() * 1400),
         visible: true
       });
 
@@ -233,7 +233,7 @@ export function useSimulatedUsers() {
   // --- GESTION DES CURSEURS DES BOTS SELON L'ÉTAT DE CONNEXION ---
   useEffect(() => {
     const editor = useEditorStore.getState();
-    
+
     if (!isConnected) {
       // Cacher les curseurs des bots quand déconnecté
       editor.setCursor({
@@ -253,13 +253,13 @@ export function useSimulatedUsers() {
       editor.setCursor({
         userId: BOTS.bob.id,
         position: { lineNumber: 5, column: 1 },
-        latency: Math.floor(1000 + Math.random() * 500),
+        latency: Math.floor(100 + Math.random() * 1400),
         visible: true
       });
       editor.setCursor({
         userId: BOTS.charlie.id,
         position: { lineNumber: 10, column: 1 },
-        latency: Math.floor(1000 + Math.random() * 500),
+        latency: Math.floor(100 + Math.random() * 1400),
         visible: true
       });
     }
@@ -280,13 +280,13 @@ export function useSimulatedUsers() {
     editor.setCursor({
       userId: BOTS.bob.id,
       position: { lineNumber: 5, column: 1 },
-      latency: Math.floor(1000 + Math.random() * 500),
+      latency: Math.floor(100 + Math.random() * 1400),
       visible: true
     });
     editor.setCursor({
       userId: BOTS.charlie.id,
       position: { lineNumber: 10, column: 1 },
-      latency: Math.floor(1000 + Math.random() * 500),
+      latency: Math.floor(100 + Math.random() * 1400),
       visible: true
     });
 

@@ -1,5 +1,5 @@
 // Network simulation constants
-export const MIN_LATENCY = 1000;
+export const MIN_LATENCY = 100;
 export const MAX_LATENCY = 1500;
 export const PACKET_LOSS_RATE = 0.01; // 1%
 export const DEFAULT_ACK_RATE = 99.9;
