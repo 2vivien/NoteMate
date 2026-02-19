@@ -41,12 +41,14 @@ export function LogsChatPanel() {
   const [messageInput, setMessageInput] = useState('');
   
   const logs = useLogsStore((state) => state.logs);
+  const addLog = useLogsStore((state) => state.addUserLog);
   const messages = useChatStore((state) => state.messages);
   const unreadCount = useChatStore((state) => state.unreadCount);
   const clearUnread = useChatStore((state) => state.clearUnread);
   const addMessage = useChatStore((state) => state.addMessage);
   
   const users = useUsersStore((state) => state.users);
+  const setUserTyping = useUsersStore((state) => state.setUserTyping);
   const currentUserId = useUsersStore((state) => state.currentUserId);
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
@@ -82,6 +84,35 @@ export function LogsChatPanel() {
 
     addMessage(newMessage);
     setMessageInput('');
+    setUserTyping(currentUserId, false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setMessageInput(val);
+
+    if (currentUserId) {
+      if (val.trim()) {
+        setUserTyping(currentUserId, true);
+        
+        // Log "Vivien écrit un message" if not already logged recently
+        if (!(window as any).vivienChatLogTimeout) {
+           addLog(
+            'chat',
+            currentUserId,
+            'Vivien',
+            '#10b981',
+            'écrit un message...',
+            ''
+          );
+          (window as any).vivienChatLogTimeout = setTimeout(() => {
+            (window as any).vivienChatLogTimeout = null;
+          }, 5000);
+        }
+      } else {
+        setUserTyping(currentUserId, false);
+      }
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -102,7 +133,7 @@ export function LogsChatPanel() {
               className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-white dark:data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs font-semibold text-text-muted dark:text-slate-500 data-[state=active]:text-text-main dark:data-[state=active]:text-slate-100 flex items-center justify-center gap-2"
             >
               <ClipboardList className="w-4 h-4" />
-              Activity Log
+              Journal d'activité
             </TabsTrigger>
             <TabsTrigger
               value="chat"
@@ -129,7 +160,7 @@ export function LogsChatPanel() {
               
               {logs.length === 0 && (
                 <div className="text-center text-text-muted dark:text-slate-500 text-sm py-8">
-                  No activity yet
+                  Aucune activité pour le moment
                 </div>
               )}
             </div>
@@ -157,7 +188,7 @@ export function LogsChatPanel() {
             
             {messages.length === 0 && (
               <div className="text-center text-text-muted dark:text-slate-500 text-sm py-8">
-                No messages yet
+                Aucun message
               </div>
             )}
           </div>
@@ -167,9 +198,9 @@ export function LogsChatPanel() {
             <div className="relative">
               <Input
                 value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
+                onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Type a message or /command..."
+                placeholder="Écrire un message..."
                 className="w-full bg-sidebar-bg dark:bg-background-dark border-border-light dark:border-border-dark rounded-lg text-xs py-2 pl-3 pr-10 focus:ring-1 focus:ring-primary focus:border-primary"
               />
               <Button
@@ -219,7 +250,7 @@ function LogItem({ log }: { log: LogEntry }) {
           </>
         ) : (
           <>
-            <span className={colorClass}>System</span>: {log.message}
+            <span className={colorClass}>Système</span>: {log.message}
             {log.details && (
               <span className="text-primary dark:text-primary/80 font-semibold">
                 {' '}
@@ -249,14 +280,10 @@ function ChatMessageItem({ message, isCurrentUser, showAvatar }: ChatMessageItem
     >
       {showAvatar && !isCurrentUser ? (
         <div
-          className="size-7 rounded-full flex-shrink-0 overflow-hidden border"
-          style={{ borderColor: message.userColor }}
+          className="size-7 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-xs shadow-sm"
+          style={{ backgroundColor: message.userColor }}
         >
-          <img
-            src={`https://i.pravatar.cc/150?u=${message.userId}`}
-            alt={message.userName}
-            className="w-full h-full object-cover"
-          />
+          {message.userName.charAt(0)}
         </div>
       ) : !isCurrentUser ? (
         <div className="size-7 flex-shrink-0" />

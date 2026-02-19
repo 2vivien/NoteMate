@@ -14,7 +14,7 @@ interface EditorStoreState {
   document: DocumentInfo;
   
   // Cursors
-  cursors: Map<string, Cursor>;
+  cursors: Record<string, Cursor>;
   
   // History for undo/redo
   history: string[];
@@ -27,6 +27,7 @@ interface EditorStoreState {
 interface EditorStoreActions {
   // Content actions
   setContent: (content: string) => void;
+  applyOperation: (userId: string, position: { lineNumber: number; column: number }, text: string, type: 'insert' | 'delete') => void;
   updateContent: (changes: { range: any; text: string }) => void;
   
   // Document actions
@@ -57,7 +58,7 @@ const initialState: EditorStoreState = {
     encoding: 'UTF-8',
     language: 'markdown',
   },
-  cursors: new Map(),
+  cursors: {},
   history: [DEFAULT_CONTENT],
   historyIndex: 0,
   isDirty: false,
@@ -74,6 +75,32 @@ export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
           state.content = content;
           state.isDirty = true;
           state.document.size = new Blob([content]).size;
+        });
+      },
+
+      applyOperation: (userId, position, text, type) => {
+        set((state) => {
+          const lines = state.content.split('\n');
+          const lineIdx = Math.min(position.lineNumber - 1, lines.length - 1);
+          const line = lines[lineIdx] || '';
+          const colIdx = Math.min(position.column - 1, line.length);
+
+          if (type === 'insert') {
+            lines[lineIdx] = line.slice(0, colIdx) + text + line.slice(colIdx);
+          } else if (type === 'delete') {
+            lines[lineIdx] = line.slice(0, Math.max(0, colIdx - text.length)) + line.slice(colIdx);
+          }
+
+          state.content = lines.join('\n');
+          state.version++;
+          state.isDirty = true;
+          state.document.size = new Blob([state.content]).size;
+          
+          // Update the user's cursor position after typing
+          const cursor = state.cursors[userId];
+          if (cursor) {
+            cursor.position.column += text.length;
+          }
         });
       },
 
@@ -102,19 +129,19 @@ export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
       // Cursor actions
       setCursor: (cursor) => {
         set((state) => {
-          state.cursors.set(cursor.userId, cursor);
+          state.cursors[cursor.userId] = cursor;
         });
       },
 
       removeCursor: (userId) => {
         set((state) => {
-          state.cursors.delete(userId);
+          delete state.cursors[userId];
         });
       },
 
       updateCursorLatency: (userId, latency) => {
         set((state) => {
-          const cursor = state.cursors.get(userId);
+          const cursor = state.cursors[userId];
           if (cursor) {
             cursor.latency = latency;
           }
@@ -128,6 +155,7 @@ export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
             state.historyIndex--;
             state.content = state.history[state.historyIndex];
             state.isDirty = true;
+            state.version++;
           }
         });
       },
@@ -138,20 +166,25 @@ export const useEditorStore = create<EditorStoreState & EditorStoreActions>()(
             state.historyIndex++;
             state.content = state.history[state.historyIndex];
             state.isDirty = true;
+            state.version++;
           }
         });
       },
 
       saveSnapshot: () => {
         set((state) => {
+          // Only save if the current content is different from the last snapshot
+          if (state.content === state.history[state.historyIndex]) return;
+
           // Remove any future history if we're not at the end
           if (state.historyIndex < state.history.length - 1) {
             state.history = state.history.slice(0, state.historyIndex + 1);
           }
+          
           state.history.push(state.content);
           state.historyIndex++;
           
-          // Limit history size
+          // Limit history size to 50 versions
           if (state.history.length > 50) {
             state.history.shift();
             state.historyIndex--;

@@ -25,7 +25,25 @@ export function Header() {
   
   const isConnected = useNetworkStore((state) => state.isConnected);
   const isSyncing = useNetworkStore((state) => state.isSyncing);
+  const packetLoss = useNetworkStore((state) => state.packetLoss);
   
+  // Local state for packet loss alert
+  const [showPacketLossAlert, setShowPacketLossAlert] = useState(false);
+  
+  // Listen for changes in packet loss (this is a simplified trigger for simulation)
+  useEffect(() => {
+    // Check for packet loss every 2 seconds instead of 5
+    const interval = setInterval(() => {
+      // Simulate a detection (higher probability for demo)
+      if (Math.random() < 0.2) { 
+        setShowPacketLossAlert(true);
+        setTimeout(() => setShowPacketLossAlert(false), 800);
+      }
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   const theme = useThemeStore((state) => state.theme);
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
@@ -91,16 +109,21 @@ export function Header() {
           {/* Connection status */}
           <motion.div
             initial={false}
-            animate={{ scale: isConnected ? [1, 1.05, 1] : 1 }}
+            animate={{ 
+              scale: isConnected ? [1, 1.05, 1] : 1,
+              backgroundColor: showPacketLossAlert ? '#fee2e2' : '', // Tailwind red-100
+            }}
             transition={{ duration: 0.3 }}
-            className={`flex items-center gap-2 px-2 py-1 rounded text-xs font-medium border ${
-              isConnected
+            className={`flex items-center gap-2 px-2 py-1 rounded text-xs font-medium border transition-colors ${
+              showPacketLossAlert
+                ? 'bg-red-100 dark:bg-red-500/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/40'
+                : isConnected
                 ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-100 dark:border-emerald-500/20'
                 : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 border-red-100 dark:border-red-500/20'
             }`}
           >
-            <span className={`size-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-red-500'} ${isConnected ? 'animate-pulse' : ''}`} />
-            {isConnected ? 'Connected' : 'Disconnected'}
+            <span className={`size-2 rounded-full ${showPacketLossAlert ? 'bg-red-500 animate-bounce' : isConnected ? 'bg-emerald-500' : 'bg-red-500'} ${isConnected ? 'animate-pulse' : ''}`} />
+            {showPacketLossAlert ? 'Packet Loss' : isConnected ? 'Connected' : 'Disconnected'}
           </motion.div>
 
           {/* Sync status */}
@@ -112,7 +135,7 @@ export function Header() {
               className="flex items-center gap-2 px-2 py-1 rounded bg-blue-50 dark:bg-primary/10 text-primary text-xs font-medium border border-blue-100 dark:border-primary/20"
             >
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              Syncing
+              Synchronisation
             </motion.div>
           )}
         </div>
@@ -128,7 +151,7 @@ export function Header() {
             onClick={undo}
             disabled={!canUndo}
             className="h-7 w-7 hover:bg-white dark:hover:bg-border-dark disabled:opacity-30"
-            title="Undo"
+            title="Annuler"
           >
             <Undo className="w-4 h-4" />
           </Button>
@@ -138,7 +161,7 @@ export function Header() {
             onClick={redo}
             disabled={!canRedo}
             className="h-7 w-7 hover:bg-white dark:hover:bg-border-dark disabled:opacity-30"
-            title="Redo"
+            title="Rétablir"
           >
             <Redo className="w-4 h-4" />
           </Button>
@@ -150,7 +173,7 @@ export function Header() {
           size="icon"
           onClick={toggleTheme}
           className="h-8 w-8 ml-1"
-          title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+          title={theme === 'light' ? 'Passer au mode sombre' : 'Passer au mode clair'}
         >
           {theme === 'light' ? (
             <Moon className="w-4 h-4" />
@@ -164,16 +187,15 @@ export function Header() {
           className="ml-2 flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition-colors"
         >
           <CloudUpload className="w-4 h-4" />
-          Push Changes
+          Publier
         </Button>
 
-        {/* User avatar */}
-        <div className="ml-4 size-8 rounded-full border-2 border-primary overflow-hidden shadow-sm">
-          <img
-            src="https://i.pravatar.cc/150?u=currentuser"
-            alt="User profile"
-            className="w-full h-full object-cover"
-          />
+        {/* Vivien avatar Flat Design */}
+        <div 
+          className="ml-4 size-8 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-sm shadow-sm"
+          style={{ backgroundColor: '#10b981' }} // Vivien's color
+        >
+          V
         </div>
       </div>
     </header>

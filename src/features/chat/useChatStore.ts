@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import type { ChatMessage } from '@/types';
+import { useLogsStore } from '../logs/useLogsStore';
 
 interface ChatStoreState {
   messages: ChatMessage[];
@@ -65,11 +66,22 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>()(
       addMessage: (message) => {
         set((state) => {
           state.messages.push(message);
+          state.unreadCount++;
           // Keep only last 100 messages
           if (state.messages.length > 100) {
             state.messages.shift();
           }
         });
+        
+        // Sync with Logs: Add chat activity to the main log
+        useLogsStore.getState().addUserLog(
+          'chat',
+          message.userId,
+          message.userName,
+          message.userColor,
+          'said:',
+          `"${message.content}"`
+        );
       },
 
       removeMessage: (messageId) => {

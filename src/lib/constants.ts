@@ -12,62 +12,49 @@ export const TYPING_DURATION_MIN = 1500;
 export const TYPING_DURATION_MAX = 4000;
 
 // Editor constants
-export const DEFAULT_DOCUMENT_NAME = 'system_architecture.md';
-export const DEFAULT_CONTENT = `# System Architecture v2.4
+export const DEFAULT_DOCUMENT_NAME = 'notes_de_reunion.md';
+export const DEFAULT_CONTENT = `# Lancement du Projet : NoteMate V2
 
-apiVersion: v1
-kind: Deployment
-metadata:
-  name: api-gateway-service
+**Date :** 19 Février 2026
+**Participants :** Vivien, Bob, Charlie
+**Sujet :** Fonctionnalités de collaboration en temps réel
 
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: gateway
-  template:
-    metadata:
-      labels:
-        app: gateway-pod
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:latest
-        ports:
-        - containerPort: 80
+## 1. Ordre du jour
+- [ ] Revoir les besoins principaux
+- [ ] Discuter de l'architecture technique
+- [ ] Assigner les premières tâches
+
+## 2. Notes de discussion
+* L'équipe est d'accord pour une architecture décentralisée.
+* La gestion de la latence est la priorité n°1 pour l'expérience utilisateur.
+
+## 3. Actions à entreprendre
+1. Rechercher OT vs CRDT (Bob)
+2. Créer le nouveau design de l'UI (Vivien)
+3. Configurer le serveur websocket (Charlie)
 
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: api-gateway-service
-spec:
-  selector:
-    app: gateway
-  ports:
-  - port: 80
-    targetPort: 80
-  type: LoadBalancer`;
+*Notes prises par Vivien*`;
 
 // User presets for simulation
 export const PRESET_USERS = [
   {
     id: 'user-alice',
-    name: 'Alice',
+    name: 'Vivien',
     color: '#10b981', // emerald
-    avatar: 'https://i.pravatar.cc/150?u=alice',
+    avatar: 'FLAT_DESIGN',
   },
   {
     id: 'user-bob',
     name: 'Bob',
     color: '#f59e0b', // amber
-    avatar: 'https://i.pravatar.cc/150?u=bob',
+    avatar: 'FLAT_DESIGN',
   },
   {
     id: 'user-charlie',
     name: 'Charlie',
     color: '#8b5cf6', // violet
-    avatar: 'https://i.pravatar.cc/150?u=charlie',
+    avatar: 'FLAT_DESIGN',
   },
 ];
 

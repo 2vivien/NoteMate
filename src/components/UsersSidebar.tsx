@@ -44,7 +44,7 @@ export function UsersSidebar() {
       <div className="p-4 border-b border-border-light dark:border-border-dark">
         <h2 className="text-[11px] font-bold uppercase tracking-wider text-text-muted dark:text-slate-500 mb-4 flex items-center gap-2">
           <Users className="w-3.5 h-3.5" />
-          Collaborators ({onlineUsers.length})
+          Collaborateurs ({onlineUsers.length})
         </h2>
 
         <div className="space-y-4">
@@ -66,17 +66,13 @@ export function UsersSidebar() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    {/* Avatar with status indicator */}
+                    {/* Avatar Flat Design with status indicator */}
                     <div className="relative">
                       <div
-                        className="size-10 rounded-full border-2 p-0.5 bg-white dark:bg-sidebar-dark"
-                        style={{ borderColor: user.color }}
+                        className="size-10 rounded-full border-2 p-0.5 flex items-center justify-center text-white font-bold text-lg shadow-sm"
+                        style={{ backgroundColor: user.color, borderColor: 'white' }}
                       >
-                        <img
-                          src={user.avatar}
-                          alt={`${user.name} avatar`}
-                          className="rounded-full w-full h-full object-cover"
-                        />
+                        {user.name.charAt(0)}
                       </div>
                       {/* Status dot */}
                       <div
@@ -89,7 +85,7 @@ export function UsersSidebar() {
                       <p className="text-sm font-semibold text-text-main dark:text-slate-100 flex items-center gap-1">
                         {user.name}
                         {isCurrentUser && (
-                          <span className="text-[10px] text-text-muted">(you)</span>
+                          <span className="text-[10px] text-text-muted">(vous)</span>
                         )}
                       </p>
                       <p
@@ -103,7 +99,7 @@ export function UsersSidebar() {
                       >
                         {isTyping ? (
                           <span className="flex items-center gap-1">
-                            is typing
+                            écrit...
                             <motion.span
                               animate={{ opacity: [0, 1, 0] }}
                               transition={{ duration: 1, repeat: Infinity }}
@@ -112,9 +108,9 @@ export function UsersSidebar() {
                             </motion.span>
                           </span>
                         ) : user.status === 'idle' ? (
-                          `Idle - ${formatIdleTime(user.lastActivity)}`
+                          `Inactif - ${formatIdleTime(user.lastActivity)}`
                         ) : (
-                          status.label
+                          'en ligne'
                         )}
                       </p>
                     </div>
