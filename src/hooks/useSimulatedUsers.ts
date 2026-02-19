@@ -47,6 +47,7 @@ const CHAT_REACTIONS: Record<string, string[]> = {
 // Variable globale pour éviter la réinitialisation en Strict Mode
 let isSimulationRunning = false;
 let conversationIndex = 0;
+let loopIntervalId: ReturnType<typeof setInterval> | null = null;
 
 // --- LOGIQUE DU HOOK ---
 export function useSimulatedUsers() {
@@ -56,6 +57,7 @@ export function useSimulatedUsers() {
   const setLatency = useNetworkStore((state) => state.setLatency);
   const setPacketLoss = useNetworkStore((state) => state.setPacketLoss);
   const setConnected = useNetworkStore((state) => state.setConnected);
+  const isConnected = useNetworkStore((state) => state.isConnected);
   const incrementActions = useUsersStore((state) => state.incrementActions);
   const setUserTyping = useUsersStore((state) => state.setUserTyping);
   const setSyncing = useNetworkStore((state) => state.setSyncing);
@@ -197,6 +199,8 @@ export function useSimulatedUsers() {
 
   // --- RÉACTIONS AUX MESSAGES DE VIVIEN ---
   useEffect(() => {
+    // Ne pas réagir si déconnecté
+    if (!isConnected) return;
     if (messages.length === 0) return;
     const lastMsg = messages[messages.length - 1];
 
@@ -224,7 +228,42 @@ export function useSimulatedUsers() {
         timeoutsRef.current.push(t);
       }
     }
-  }, [messages, botSendMessage]);
+  }, [messages, botSendMessage, isConnected]);
+
+  // --- GESTION DES CURSEURS DES BOTS SELON L'ÉTAT DE CONNEXION ---
+  useEffect(() => {
+    const editor = useEditorStore.getState();
+    
+    if (!isConnected) {
+      // Cacher les curseurs des bots quand déconnecté
+      editor.setCursor({
+        userId: BOTS.bob.id,
+        position: { lineNumber: 1, column: 1 },
+        latency: 0,
+        visible: false
+      });
+      editor.setCursor({
+        userId: BOTS.charlie.id,
+        position: { lineNumber: 1, column: 1 },
+        latency: 0,
+        visible: false
+      });
+    } else {
+      // Afficher les curseurs des bots quand reconnecté
+      editor.setCursor({
+        userId: BOTS.bob.id,
+        position: { lineNumber: 5, column: 1 },
+        latency: Math.floor(1000 + Math.random() * 500),
+        visible: true
+      });
+      editor.setCursor({
+        userId: BOTS.charlie.id,
+        position: { lineNumber: 10, column: 1 },
+        latency: Math.floor(1000 + Math.random() * 500),
+        visible: true
+      });
+    }
+  }, [isConnected]);
 
   // --- CONVERSATIONS AUTONOMES ENTRE BOB ET CHARLIE ---
   useEffect(() => {
@@ -281,7 +320,12 @@ export function useSimulatedUsers() {
       timeoutsRef.current.push(t3);
 
       // Boucle continue pour les actions
-      const loopInterval = setInterval(() => {
+      loopIntervalId = setInterval(() => {
+        // Vérifier si l'utilisateur est connecté avant d'agir
+        if (!useNetworkStore.getState().isConnected) {
+          return; // Ne rien faire si déconnecté
+        }
+
         const action = Math.random();
         const convIdx = conversationIndex % BOB_CHARLIE_CONVERSATIONS.length;
         conversationIndex++;
@@ -296,8 +340,6 @@ export function useSimulatedUsers() {
           botEditSmart(BOTS.charlie.id);
         }
       }, 8000);
-
-      timeoutsRef.current.push(loopInterval as any);
     }, 2000);
     timeoutsRef.current.push(initTimeout);
 

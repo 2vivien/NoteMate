@@ -6,7 +6,7 @@ import { useUsersStore } from '@/features/users/useUsersStore';
 import { useLogsStore } from '@/features/logs/useLogsStore';
 import { useNetworkStore } from '@/features/network/useNetworkStore';
 import { useThemeStore } from '@/features/theme/useThemeStore';
-import { Zap } from 'lucide-react';
+import { Zap, WifiOff } from 'lucide-react';
 import type { editor } from 'monaco-editor';
 
 // Cursor decoration type
@@ -23,6 +23,7 @@ export function EditorPanel() {
 
   const users = useUsersStore((state) => state.users);
   const latency = useNetworkStore((state) => state.latency);
+  const isConnected = useNetworkStore((state) => state.isConnected);
   const theme = useThemeStore((state) => state.theme);
 
   const [isEditorReady, setIsEditorReady] = useState(false);
@@ -196,6 +197,23 @@ export function EditorPanel() {
 
   return (
     <section className="flex-1 bg-editor-bg dark:bg-background-dark flex flex-col relative">
+      {/* Offline warning banner */}
+      <AnimatePresence>
+        {!isConnected && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 py-2 text-amber-700 dark:text-amber-400 text-xs"
+          >
+            <WifiOff className="w-4 h-4" />
+            <span className="font-medium">Vous êtes hors ligne</span>
+            <span className="text-amber-600 dark:text-amber-500">—</span>
+            <span className="text-amber-600 dark:text-amber-500">Vos modifications ne seront pas synchronisées</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Monaco Editor */}
       <div className="flex-1 overflow-hidden">
         <Editor
@@ -213,25 +231,27 @@ export function EditorPanel() {
         />
       </div>
 
-      {/* Floating latency indicator */}
+      {/* Floating latency indicator - seulement visible quand connecté */}
       <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          className="absolute bottom-6 right-6 flex items-center gap-2 bg-white/90 dark:bg-sidebar-dark/90 backdrop-blur border border-border-light dark:border-border-dark px-3 py-1.5 rounded-full text-xs text-text-muted dark:text-slate-400 shadow-sm z-20"
-        >
-          <Zap className="w-4 h-4 text-primary" />
-          <span>Latence Réseau :</span>
-          <motion.span
-            key={latency}
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-text-main dark:text-slate-100 font-mono font-semibold"
+        {isConnected && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute bottom-6 right-6 flex items-center gap-2 bg-white/90 dark:bg-sidebar-dark/90 backdrop-blur border border-border-light dark:border-border-dark px-3 py-1.5 rounded-full text-xs text-text-muted dark:text-slate-400 shadow-sm z-20"
           >
-            {latency}ms
-          </motion.span>
-        </motion.div>
+            <Zap className="w-4 h-4 text-primary" />
+            <span>Latence Réseau :</span>
+            <motion.span
+              key={latency}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-text-main dark:text-slate-100 font-mono font-semibold"
+            >
+              {latency}ms
+            </motion.span>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Simulated cursors overlay (for smooth animations) */}

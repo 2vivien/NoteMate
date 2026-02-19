@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLogsStore } from '@/features/logs/useLogsStore';
 import { useChatStore } from '@/features/chat/useChatStore';
 import { useUsersStore } from '@/features/users/useUsersStore';
+import { useNetworkStore } from '@/features/network/useNetworkStore';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ClipboardList, MessageSquare, Send } from 'lucide-react';
+import { ClipboardList, MessageSquare, Send, WifiOff } from 'lucide-react';
 import type { LogEntry, LogType, ChatMessage } from '@/types';
 
 const logTypeColors: Record<LogType, string> = {
@@ -53,6 +54,8 @@ export function LogsChatPanel() {
   const users = useUsersStore((state) => state.users);
   const setUserTyping = useUsersStore((state) => state.setUserTyping);
   const currentUserId = useUsersStore((state) => state.currentUserId);
+
+  const isConnected = useNetworkStore((state) => state.isConnected);
 
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const logsScrollRef = useRef<HTMLDivElement>(null);
@@ -146,70 +149,96 @@ export function LogsChatPanel() {
 
         {/* Activity Log content */}
         <TabsContent value="logs" className="flex-1 overflow-hidden m-0 mt-0 data-[state=inactive]:hidden">
-          <ScrollArea className="h-full">
-            <div ref={logsScrollRef} className="p-3 space-y-2">
-              <AnimatePresence initial={false}>
-                {logs.map((log) => (
-                  <LogItem key={log.id} log={log} />
-                ))}
-              </AnimatePresence>
-
-              {logs.length === 0 && (
-                <div className="text-center text-text-muted dark:text-slate-500 text-sm py-8">
-                  Aucune activité pour le moment
-                </div>
-              )}
+          {!isConnected ? (
+            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+              <WifiOff className="w-12 h-12 text-gray-400 dark:text-slate-600 mb-4" />
+              <p className="text-sm font-medium text-text-muted dark:text-slate-500">
+                Vous êtes hors ligne
+              </p>
+              <p className="text-xs text-text-muted dark:text-slate-500 mt-1">
+                Les logs d'activité ne sont pas disponibles
+              </p>
             </div>
-          </ScrollArea>
+          ) : (
+            <ScrollArea className="h-full">
+              <div ref={logsScrollRef} className="p-3 space-y-2">
+                <AnimatePresence initial={false}>
+                  {logs.map((log) => (
+                    <LogItem key={log.id} log={log} />
+                  ))}
+                </AnimatePresence>
+
+                {logs.length === 0 && (
+                  <div className="text-center text-text-muted dark:text-slate-500 text-sm py-8">
+                    Aucune activité pour le moment
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          )}
         </TabsContent>
 
         {/* Chat content */}
         <TabsContent value="chat" className="flex-1 overflow-hidden m-0 mt-0 data-[state=inactive]:hidden flex flex-col">
-          <div ref={chatScrollRef} className="flex-1 overflow-auto p-3 space-y-3">
-            <AnimatePresence initial={false}>
-              {messages.map((message, index) => {
-                const isCurrentUser = message.userId === currentUserId;
-                const showAvatar = index === 0 || messages[index - 1].userId !== message.userId;
-
-                return (
-                  <ChatMessageItem
-                    key={message.id}
-                    message={message}
-                    isCurrentUser={isCurrentUser}
-                    showAvatar={showAvatar}
-                  />
-                );
-              })}
-            </AnimatePresence>
-
-            {messages.length === 0 && (
-              <div className="text-center text-text-muted dark:text-slate-500 text-sm py-8">
-                Aucun message
-              </div>
-            )}
-          </div>
-
-          {/* Chat input */}
-          <div className="p-3 border-t border-border-light dark:border-border-dark bg-white dark:bg-transparent">
-            <div className="relative">
-              <Input
-                value={messageInput}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Écrire un message..."
-                className="w-full bg-sidebar-bg dark:bg-background-dark border-border-light dark:border-border-dark rounded-lg text-xs py-2 pl-3 pr-10 focus:ring-1 focus:ring-primary focus:border-primary"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleSendMessage}
-                disabled={!messageInput.trim()}
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-primary hover:text-primary/80 disabled:opacity-30"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+          {!isConnected ? (
+            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+              <WifiOff className="w-12 h-12 text-gray-400 dark:text-slate-600 mb-4" />
+              <p className="text-sm font-medium text-text-muted dark:text-slate-500">
+                Vous êtes hors ligne
+              </p>
+              <p className="text-xs text-text-muted dark:text-slate-500 mt-1">
+                Le chat n'est pas disponible
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              <div ref={chatScrollRef} className="flex-1 overflow-auto p-3 space-y-3">
+                <AnimatePresence initial={false}>
+                  {messages.map((message, index) => {
+                    const isCurrentUser = message.userId === currentUserId;
+                    const showAvatar = index === 0 || messages[index - 1].userId !== message.userId;
+
+                    return (
+                      <ChatMessageItem
+                        key={message.id}
+                        message={message}
+                        isCurrentUser={isCurrentUser}
+                        showAvatar={showAvatar}
+                      />
+                    );
+                  })}
+                </AnimatePresence>
+
+                {messages.length === 0 && (
+                  <div className="text-center text-text-muted dark:text-slate-500 text-sm py-8">
+                    Aucun message
+                  </div>
+                )}
+              </div>
+
+              {/* Chat input */}
+              <div className="p-3 border-t border-border-light dark:border-border-dark bg-white dark:bg-transparent">
+                <div className="relative">
+                  <Input
+                    value={messageInput}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Écrire un message..."
+                    className="w-full bg-sidebar-bg dark:bg-background-dark border-border-light dark:border-border-dark rounded-lg text-xs py-2 pl-3 pr-10 focus:ring-1 focus:ring-primary focus:border-primary"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleSendMessage}
+                    disabled={!messageInput.trim()}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-primary hover:text-primary/80 disabled:opacity-30"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </TabsContent>
       </Tabs>
     </aside>

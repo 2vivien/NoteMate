@@ -12,7 +12,7 @@ export const TYPING_DURATION_MIN = 1500;
 export const TYPING_DURATION_MAX = 4000;
 
 // Editor constants
-export const DEFAULT_DOCUMENT_NAME = 'notes_de_reunion.md';
+export const DEFAULT_DOCUMENT_NAME = 'notes_de_reunion.docx';
 export const DEFAULT_CONTENT = `# Lancement du Projet : NoteMate V2
 
 **Date :** 19 Février 2026
