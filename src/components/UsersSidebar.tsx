@@ -35,8 +35,15 @@ export function UsersSidebar() {
   const users = useUsersStore((state) => state.users);
   const currentUserId = useUsersStore((state) => state.currentUserId);
   const session = useNetworkStore((state) => state.session);
+  const isConnected = useNetworkStore((state) => state.isConnected);
 
-  const onlineUsers = users.filter((u) => u.status !== 'offline');
+  // Si déconnecté, tous les utilisateurs apparaissent hors ligne
+  const displayUsers = users.map((u) => ({
+    ...u,
+    status: isConnected ? u.status : 'offline' as const
+  }));
+
+  const onlineUsers = displayUsers.filter((u) => u.status !== 'offline');
 
   return (
     <aside className="w-64 border-r border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0">
@@ -49,7 +56,7 @@ export function UsersSidebar() {
 
         <div className="space-y-4">
           <AnimatePresence mode="popLayout">
-            {users.map((user) => {
+            {displayUsers.map((user) => {
               const isCurrentUser = user.id === currentUserId;
               const status = statusConfig[user.status];
               const isTyping = user.status === 'typing';
@@ -86,7 +93,9 @@ export function UsersSidebar() {
                       </p>
                       <p
                         className={`text-[10px] font-mono italic ${isTyping
-                            ? 'text-emerald-600 dark:text-emerald-500'
+                          ? 'text-emerald-600 dark:text-emerald-500'
+                          : user.status === 'offline'
+                            ? 'text-red-500 dark:text-red-400'
                             : user.status === 'idle'
                               ? 'text-text-muted dark:text-slate-500'
                               : 'text-text-muted dark:text-slate-500'
@@ -102,6 +111,8 @@ export function UsersSidebar() {
                               ...
                             </motion.span>
                           </span>
+                        ) : user.status === 'offline' ? (
+                          'hors ligne'
                         ) : user.status === 'idle' ? (
                           `Inactif - ${formatIdleTime(user.lastActivity)}`
                         ) : (
