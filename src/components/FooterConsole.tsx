@@ -34,8 +34,6 @@ export function FooterConsole() {
   const docInfo = useEditorStore((state) => state.document);
 
   const latency = useNetworkStore((state) => state.latency);
-  const packetLoss = useNetworkStore((state) => state.packetLoss);
-  const ackRate = useNetworkStore((state) => state.ackRate);
   const isConnected = useNetworkStore((state) => state.isConnected);
   const simulatedLag = useNetworkStore((state) => state.simulatedLag);
   const setSimulatedLag = useNetworkStore((state) => state.setSimulatedLag);
