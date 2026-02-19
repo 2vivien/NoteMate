@@ -1,0 +1,226 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 13% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 15%;
+    --primary: 217 91% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 13% 15%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 13% 15%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 50%;
+    --radius: 0.5rem;
+    
+    /* Custom colors */
+    --editor-bg: 0 0% 100%;
+    --sidebar-bg: 220 14% 97%;
+    --border-light: 220 13% 91%;
+    --text-main: 220 13% 15%;
+    --text-muted: 220 9% 46%;
+    
+    /* Dark mode colors (will be overridden in .dark) */
+    --background-dark: 220 20% 4%;
+    --sidebar-dark: 220 20% 8%;
+    --border-dark: 220 15% 15%;
+  }
+
+  .dark {
+    --background: 220 20% 4%;
+    --foreground: 0 0% 98%;
+    --card: 220 20% 6%;
+    --card-foreground: 0 0% 98%;
+    --popover: 220 20% 6%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 217 91% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 15% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 220 15% 12%;
+    --muted-foreground: 220 9% 55%;
+    --accent: 220 15% 12%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 15% 15%;
+    --input: 220 15% 15%;
+    --ring: 217 91% 50%;
+    
+    /* Custom dark colors */
+    --editor-bg: 220 20% 4%;
+    --sidebar-bg: 220 20% 8%;
+    --border-dark: 220 15% 15%;
+    --text-main: 0 0% 98%;
+    --text-muted: 220 9% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  /* Editor backgrounds */
+  .bg-editor-bg {
+    background-color: hsl(var(--editor-bg));
+  }
+  
+  .bg-sidebar-bg {
+    background-color: hsl(var(--sidebar-bg));
+  }
+  
+  .border-border-light {
+    border-color: hsl(var(--border-light));
+  }
+  
+  .border-border-dark {
+    border-color: hsl(var(--border-dark));
+  }
+  
+  .text-text-main {
+    color: hsl(var(--text-main));
+  }
+  
+  .text-text-muted {
+    color: hsl(var(--text-muted));
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--sidebar-bg));
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+  
+  /* Code syntax colors for light mode */
+  .code-syntax-keyword {
+    color: #d73a49;
+    font-weight: 500;
+  }
+  
+  .code-syntax-string {
+    color: #032f62;
+  }
+  
+  .code-syntax-func {
+    color: #6f42c1;
+  }
+  
+  .code-syntax-comment {
+    color: #6a737d;
+    font-style: italic;
+  }
+  
+  .code-syntax-tag {
+    color: #22863a;
+  }
+  
+  .code-syntax-attr {
+    color: #005cc5;
+  }
+  
+  /* Code syntax colors for dark mode */
+  .dark .code-syntax-keyword {
+    color: #c678dd;
+  }
+  
+  .dark .code-syntax-string {
+    color: #98c379;
+  }
+  
+  .dark .code-syntax-func {
+    color: #61afef;
+  }
+  
+  .dark .code-syntax-comment {
+    color: #5c6370;
+    font-style: italic;
+  }
+  
+  .dark .code-syntax-tag {
+    color: #e06c75;
+  }
+  
+  .dark .code-syntax-attr {
+    color: #d19a66;
+  }
+  
+  /* Cursor animations */
+  @keyframes pulse-green {
+    0% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+  }
+  
+  .pulse-status {
+    animation: pulse-green 2s infinite;
+  }
+  
+  /* Cursor indicators */
+  .cursor-alice {
+    border-left: 2px solid #10b981;
+  }
+  
+  .cursor-bob {
+    border-left: 2px solid #f59e0b;
+  }
+  
+  .cursor-charlie {
+    border-left: 2px solid #8b5cf6;
+  }
+  
+  /* Font families */
+  .font-display {
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .font-mono {
+    font-family: 'Fira Code', monospace;
+  }
+}
