@@ -1,9 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUsersStore } from '@/features/users/useUsersStore';
 import { useNetworkStore } from '@/features/network/useNetworkStore';
+import { useThemeStore } from '@/features/theme/useThemeStore';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Clock, LogOut, CheckCircle } from 'lucide-react';
+import { Users, Clock, LogOut, CheckCircle, Sun, Moon } from 'lucide-react';
 
 const statusConfig = {
   online: { dot: 'bg-emerald-500', label: 'online' },
@@ -33,11 +35,15 @@ function formatIdleTime(lastActivity: number): string {
 }
 
 export function UsersSidebar() {
+  const isMobile = useIsMobile();
   const users = useUsersStore((state) => state.users);
   const currentUserId = useUsersStore((state) => state.currentUserId);
   const session = useNetworkStore((state) => state.session);
   const isConnected = useNetworkStore((state) => state.isConnected);
   const setConnected = useNetworkStore((state) => state.setConnected);
+
+  const theme = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
   // Si déconnecté, tous les utilisateurs apparaissent hors ligne
   const displayUsers = users.map((u) => ({
@@ -59,10 +65,28 @@ export function UsersSidebar() {
     <aside className="w-64 md:w-72 border-r border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0 min-w-0">
       {/* Users list */}
       <div className="p-4 md:p-5 border-b border-border-light dark:border-border-dark">
-        <h2 className="text-xs md:text-sm font-bold uppercase tracking-wider text-text-muted dark:text-slate-500 mb-4 md:mb-5 flex items-center gap-2">
-          <Users className="w-4 h-4" />
-          Collaborateurs ({onlineUsers.length})
-        </h2>
+        <div className="flex items-center justify-between mb-4 md:mb-5">
+          <h2 className="text-xs md:text-sm font-bold uppercase tracking-wider text-text-muted dark:text-slate-500 flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Collaborateurs ({onlineUsers.length})
+          </h2>
+          {/* Theme toggle - Only visible on mobile */}
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="h-8 w-8"
+              title={theme === 'light' ? 'Passer au mode sombre' : 'Passer au mode clair'}
+            >
+              {theme === 'light' ? (
+                <Moon className="w-4 h-4" />
+              ) : (
+                <Sun className="w-4 h-4" />
+              )}
+            </Button>
+          )}
+        </div>
 
         <div className="space-y-4 md:space-y-5">
           <AnimatePresence mode="popLayout">

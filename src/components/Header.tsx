@@ -170,20 +170,22 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
           </Button>
         </div>
 
-        {/* Theme toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          className="h-9 w-9 md:h-10 md:w-10"
-          title={theme === 'light' ? 'Passer au mode sombre' : 'Passer au mode clair'}
-        >
-          {theme === 'light' ? (
-            <Moon className="w-5 h-5" />
-          ) : (
-            <Sun className="w-5 h-5" />
-          )}
-        </Button>
+        {/* Theme toggle - Hidden on mobile */}
+        {!isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-9 w-9 md:h-10 md:w-10"
+            title={theme === 'light' ? 'Passer au mode sombre' : 'Passer au mode clair'}
+          >
+            {theme === 'light' ? (
+              <Moon className="w-5 h-5" />
+            ) : (
+              <Sun className="w-5 h-5" />
+            )}
+          </Button>
+        )}
 
         {/* Mobile Chat Toggle */}
         {isMobile && (

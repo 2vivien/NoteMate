@@ -123,7 +123,7 @@ export function LogsChatPanel() {
 
   return (
     <aside className="w-80 md:w-96 border-l border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0 min-w-0">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full min-h-0">
         {/* Tab headers */}
         <div className="flex border-b border-border-light dark:border-border-dark h-12 md:h-14 shrink-0">
           <TabsList className="w-full h-full bg-transparent p-0">
@@ -149,7 +149,7 @@ export function LogsChatPanel() {
         </div>
 
         {/* Activity Log content */}
-        <TabsContent value="logs" className="flex-1 overflow-hidden m-0 mt-0 data-[state=inactive]:hidden">
+        <TabsContent value="logs" className="flex-1 m-0 mt-0 data-[state=inactive]:hidden min-h-0">
           {!isConnected ? (
             <div className="h-full flex flex-col items-center justify-center p-6 text-center">
               <WifiOff className="w-12 h-12 md:w-16 md:h-16 text-gray-400 dark:text-slate-600 mb-4" />
@@ -180,9 +180,9 @@ export function LogsChatPanel() {
         </TabsContent>
 
         {/* Chat content */}
-        <TabsContent value="chat" className="flex-1 overflow-hidden m-0 mt-0 data-[state=inactive]:hidden flex flex-col">
+        <TabsContent value="chat" className="flex-1 m-0 mt-0 data-[state=inactive]:hidden flex flex-col min-h-0">
           {!isConnected ? (
-            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
               <WifiOff className="w-12 h-12 md:w-16 md:h-16 text-gray-400 dark:text-slate-600 mb-4" />
               <p className="text-sm md:text-base font-medium text-text-muted dark:text-slate-500">
                 Vous êtes hors ligne
@@ -194,7 +194,7 @@ export function LogsChatPanel() {
           ) : (
             <>
               {/* Messages area - scrollable */}
-              <div ref={chatScrollRef} className="flex-1 overflow-auto p-3 md:p-4 space-y-3 md:space-y-4">
+              <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4 min-h-0">
                 <AnimatePresence initial={false}>
                   {messages.map((message, index) => {
                     const isCurrentUser = message.userId === currentUserId;
@@ -218,7 +218,7 @@ export function LogsChatPanel() {
                 )}
               </div>
 
-              {/* Chat input - fixed at bottom */}
+              {/* Chat input - always visible at bottom */}
               <div className="shrink-0 p-3 md:p-4 border-t border-border-light dark:border-border-dark bg-white dark:bg-sidebar-dark">
                 <div className="relative">
                   <Input
