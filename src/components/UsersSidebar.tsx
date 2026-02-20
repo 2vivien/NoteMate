@@ -149,7 +149,7 @@ export function UsersSidebar() {
       </div>
 
       {/* Session info and Disconnect button at bottom */}
-      <div className="p-4 md:p-5 mt-auto">
+      <div className="p-4 md:p-5 mt-auto mb-4 md:mb-6">
         <div className="bg-blue-50 dark:bg-primary/5 border border-blue-100 dark:border-primary/20 rounded-lg p-3 md:p-4">
           <p className="text-xs md:text-sm font-bold text-primary uppercase mb-2 md:mb-3">
             Session Info
@@ -172,7 +172,7 @@ export function UsersSidebar() {
         </div>
 
         {/* Disconnect/Reconnect button */}
-        <div className="mt-3 md:mt-4">
+        <div className="mt-4 md:mt-5">
           {isConnected ? (
             <Button
               onClick={handleDisconnect}

@@ -17,6 +17,7 @@ import {
   Menu,
   CheckCircle,
   AlertTriangle,
+  X,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -39,7 +40,6 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
   const packetLoss = useNetworkStore((state) => state.packetLoss);
   const latency = useNetworkStore((state) => state.latency);
 
-  // showPacketLossAlert can now be derived from store or removed if redundant
   const showPacketLossAlert = packetLoss > 0 && !isConnected;
 
   const theme = useThemeStore((state) => state.theme);
@@ -49,9 +49,11 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
   const [editValue, setEditValue] = useState(documentInfo.name);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Popup states
   const [showPublishSuccess, setShowPublishSuccess] = useState(false);
   const [showOfflineWarning, setShowOfflineWarning] = useState(false);
+
+  // Get first word of document name
+  const displayDocName = documentInfo.name.split(' ')[0];
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -67,12 +69,16 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
     setIsEditing(false);
   };
 
+  const handleCancelEdit = () => {
+    setEditValue(documentInfo.name);
+    setIsEditing(false);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSaveName();
     } else if (e.key === 'Escape') {
-      setEditValue(documentInfo.name);
-      setIsEditing(false);
+      handleCancelEdit();
     }
   };
 
@@ -103,27 +109,16 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
         {/* Document name */}
         <div className="flex items-center gap-2 overflow-hidden">
           <FileText className="w-5 h-5 text-primary shrink-0 hidden sm:block" />
-          {isEditing ? (
-            <Input
-              ref={inputRef}
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onBlur={handleSaveName}
-              onKeyDown={handleKeyDown}
-              className="h-8 w-36 md:w-52 text-sm"
-            />
-          ) : (
-            <h1
-              onClick={() => setIsEditing(true)}
-              className="text-sm md:text-base font-semibold tracking-tight text-text-main dark:text-slate-100 cursor-pointer hover:text-primary transition-colors truncate max-w-[100px] xs:max-w-[150px] md:max-w-none"
-              title="Cliquer pour modifier"
-            >
-              {documentInfo.name}
-            </h1>
-          )}
+          <h1
+            onClick={() => setIsEditing(true)}
+            className="text-sm md:text-base font-semibold tracking-tight text-text-main dark:text-slate-100 cursor-pointer hover:text-primary transition-colors truncate max-w-[100px] xs:max-w-[150px] md:max-w-none"
+            title="Cliquer pour modifier"
+          >
+            {displayDocName}
+          </h1>
         </div>
 
-        {/* Unified Status indicator - Compact on mobile, full on desktop */}
+        {/* Unified Status indicator */}
         <motion.div
           initial={false}
           animate={{
@@ -139,11 +134,9 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
               : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-100 dark:border-emerald-500/20'
             }`}
         >
-          {/* Mobile: Only colored dot */}
           <span className={`size-3 md:size-2.5 rounded-full ${!isConnected ? 'bg-red-500' :
             isSyncing ? 'bg-primary animate-pulse' : 'bg-emerald-500'
             }`} />
-          {/* Desktop: Full text */}
           <span className="hidden md:inline">
             {!isConnected ? 'DÉCONNECTÉ' :
               isSyncing ? 'SYNCHRONISATION...' : `CONNECTÉ (${latency}ms)`}
@@ -153,7 +146,7 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
 
       {/* Right section */}
       <div className="flex items-center gap-2 md:gap-3 shrink-0">
-        {/* Undo/Redo - Always visible */}
+        {/* Undo/Redo */}
         <div className="flex items-center gap-1 bg-gray-200/50 dark:bg-border-dark/30 p-1 rounded-lg shrink-0">
           <Button
             variant="ghost"
@@ -209,6 +202,67 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
           <span className="hidden sm:inline">Publier</span>
         </Button>
       </div>
+
+      {/* Edit Document Name Modal */}
+      <AnimatePresence>
+        {isEditing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={handleCancelEdit}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-text-main dark:text-white">
+                  Modifier le nom du document
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCancelEdit}
+                  className="h-8 w-8"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <Input
+                ref={inputRef}
+                value={editValue}
+                onChange={(e) => setEditValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Nom du document"
+                className="w-full text-base py-3"
+              />
+
+              <div className="flex gap-3 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={handleCancelEdit}
+                  className="flex-1"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleSaveName}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Accepter
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Publish Success Toast */}
       <AnimatePresence>
