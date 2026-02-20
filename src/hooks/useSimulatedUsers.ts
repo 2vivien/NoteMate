@@ -47,7 +47,7 @@ const CHAT_REACTIONS: Record<string, string[]> = {
 // Variable globale pour éviter la réinitialisation en Strict Mode
 let isSimulationRunning = false;
 let conversationIndex = 0;
-let loopIntervalId: ReturnType<typeof setInterval> | null = null;
+let _loopIntervalId: ReturnType<typeof setInterval> | null = null;
 
 // --- LOGIQUE DU HOOK ---
 export function useSimulatedUsers() {
@@ -320,7 +320,7 @@ export function useSimulatedUsers() {
       timeoutsRef.current.push(t3);
 
       // Boucle continue pour les actions
-      loopIntervalId = setInterval(() => {
+      _loopIntervalId = setInterval(() => {
         // Vérifier si l'utilisateur est connecté avant d'agir
         if (!useNetworkStore.getState().isConnected) {
           return; // Ne rien faire si déconnecté
