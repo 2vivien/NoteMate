@@ -122,23 +122,24 @@ export function LogsChatPanel() {
   };
 
   return (
-    <aside className="w-96 border-l border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0">
+    <aside className="w-80 md:w-96 border-l border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0 min-w-0">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
         {/* Tab headers */}
-        <div className="flex border-b border-border-light dark:border-border-dark h-14">
+        <div className="flex border-b border-border-light dark:border-border-dark h-12 md:h-14 shrink-0">
           <TabsList className="w-full h-full bg-transparent p-0">
             <TabsTrigger
               value="logs"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-white dark:data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm font-semibold text-text-muted dark:text-slate-500 data-[state=active]:text-text-main dark:data-[state=active]:text-slate-100 flex items-center justify-center gap-2"
+              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-white dark:data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs md:text-sm font-semibold text-text-muted dark:text-slate-500 data-[state=active]:text-text-main dark:data-[state=active]:text-slate-100 flex items-center justify-center gap-2"
             >
-              <ClipboardList className="w-5 h-5" />
-              Journal d'activité
+              <ClipboardList className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="hidden sm:inline">Journal d'activité</span>
+              <span className="sm:hidden">Journal</span>
             </TabsTrigger>
             <TabsTrigger
               value="chat"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-white dark:data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm font-semibold text-text-muted dark:text-slate-500 data-[state=active]:text-text-main dark:data-[state=active]:text-slate-100 flex items-center justify-center gap-2"
+              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-white dark:data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs md:text-sm font-semibold text-text-muted dark:text-slate-500 data-[state=active]:text-text-main dark:data-[state=active]:text-slate-100 flex items-center justify-center gap-2"
             >
-              <MessageSquare className="w-5 h-5" />
+              <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
               Chat
               {unreadCount > 0 && activeTab !== 'chat' && (
                 <span className="size-2 rounded-full bg-primary" />
@@ -151,17 +152,17 @@ export function LogsChatPanel() {
         <TabsContent value="logs" className="flex-1 overflow-hidden m-0 mt-0 data-[state=inactive]:hidden">
           {!isConnected ? (
             <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-              <WifiOff className="w-16 h-16 text-gray-400 dark:text-slate-600 mb-4" />
-              <p className="text-base font-medium text-text-muted dark:text-slate-500">
+              <WifiOff className="w-12 h-12 md:w-16 md:h-16 text-gray-400 dark:text-slate-600 mb-4" />
+              <p className="text-sm md:text-base font-medium text-text-muted dark:text-slate-500">
                 Vous êtes hors ligne
               </p>
-              <p className="text-sm text-text-muted dark:text-slate-500 mt-1">
+              <p className="text-xs md:text-sm text-text-muted dark:text-slate-500 mt-1">
                 Les logs d'activité ne sont pas disponibles
               </p>
             </div>
           ) : (
             <ScrollArea className="h-full">
-              <div ref={logsScrollRef} className="p-4 space-y-3">
+              <div ref={logsScrollRef} className="p-3 md:p-4 space-y-2 md:space-y-3">
                 <AnimatePresence initial={false}>
                   {logs.map((log) => (
                     <LogItem key={log.id} log={log} />
@@ -169,7 +170,7 @@ export function LogsChatPanel() {
                 </AnimatePresence>
 
                 {logs.length === 0 && (
-                  <div className="text-center text-text-muted dark:text-slate-500 text-base py-8">
+                  <div className="text-center text-text-muted dark:text-slate-500 text-sm md:text-base py-8">
                     Aucune activité pour le moment
                   </div>
                 )}
@@ -182,17 +183,18 @@ export function LogsChatPanel() {
         <TabsContent value="chat" className="flex-1 overflow-hidden m-0 mt-0 data-[state=inactive]:hidden flex flex-col">
           {!isConnected ? (
             <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-              <WifiOff className="w-16 h-16 text-gray-400 dark:text-slate-600 mb-4" />
-              <p className="text-base font-medium text-text-muted dark:text-slate-500">
+              <WifiOff className="w-12 h-12 md:w-16 md:h-16 text-gray-400 dark:text-slate-600 mb-4" />
+              <p className="text-sm md:text-base font-medium text-text-muted dark:text-slate-500">
                 Vous êtes hors ligne
               </p>
-              <p className="text-sm text-text-muted dark:text-slate-500 mt-1">
+              <p className="text-xs md:text-sm text-text-muted dark:text-slate-500 mt-1">
                 Le chat n'est pas disponible
               </p>
             </div>
           ) : (
             <>
-              <div ref={chatScrollRef} className="flex-1 overflow-auto p-4 space-y-4">
+              {/* Messages area - scrollable */}
+              <div ref={chatScrollRef} className="flex-1 overflow-auto p-3 md:p-4 space-y-3 md:space-y-4">
                 <AnimatePresence initial={false}>
                   {messages.map((message, index) => {
                     const isCurrentUser = message.userId === currentUserId;
@@ -210,30 +212,30 @@ export function LogsChatPanel() {
                 </AnimatePresence>
 
                 {messages.length === 0 && (
-                  <div className="text-center text-text-muted dark:text-slate-500 text-base py-8">
+                  <div className="text-center text-text-muted dark:text-slate-500 text-sm md:text-base py-8">
                     Aucun message
                   </div>
                 )}
               </div>
 
-              {/* Chat input */}
-              <div className="p-4 border-t border-border-light dark:border-border-dark bg-white dark:bg-transparent">
+              {/* Chat input - fixed at bottom */}
+              <div className="shrink-0 p-3 md:p-4 border-t border-border-light dark:border-border-dark bg-white dark:bg-sidebar-dark">
                 <div className="relative">
                   <Input
                     value={messageInput}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     placeholder="Écrire un message..."
-                    className="w-full bg-sidebar-bg dark:bg-background-dark border-border-light dark:border-border-dark rounded-lg text-sm py-3 pl-4 pr-12 focus:ring-1 focus:ring-primary focus:border-primary"
+                    className="w-full bg-sidebar-bg dark:bg-background-dark border-border-light dark:border-border-dark rounded-lg text-sm py-2.5 md:py-3 pl-3 md:pl-4 pr-10 md:pr-12 focus:ring-1 focus:ring-primary focus:border-primary"
                   />
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={handleSendMessage}
                     disabled={!messageInput.trim()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 text-primary hover:text-primary/80 disabled:opacity-30"
+                    className="absolute right-1.5 md:right-2 top-1/2 -translate-y-1/2 h-7 w-7 md:h-8 md:w-8 text-primary hover:text-primary/80 disabled:opacity-30"
                   >
-                    <Send className="w-5 h-5" />
+                    <Send className="w-4 h-4 md:w-5 md:h-5" />
                   </Button>
                 </div>
               </div>
@@ -297,34 +299,37 @@ interface ChatMessageItemProps {
 }
 
 function ChatMessageItem({ message, isCurrentUser, showAvatar }: ChatMessageItemProps) {
+  // Get first word of name
+  const displayName = message.userName.split(' ')[0];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex gap-3 ${isCurrentUser ? 'flex-row-reverse' : ''}`}
+      className={`flex gap-2 md:gap-3 ${isCurrentUser ? 'flex-row-reverse' : ''}`}
     >
       {showAvatar && !isCurrentUser ? (
         <div
-          className="size-9 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm"
+          className="size-8 md:size-9 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-xs md:text-sm shadow-sm"
           style={{ backgroundColor: message.userColor }}
         >
           {message.userName.charAt(0)}
         </div>
       ) : !isCurrentUser ? (
-        <div className="size-9 flex-shrink-0" />
+        <div className="size-8 md:size-9 flex-shrink-0" />
       ) : null}
 
-      <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[80%]`}>
+      <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[75%] md:max-w-[80%]`}>
         {showAvatar && (
           <span
-            className="text-xs font-medium mb-1"
+            className="text-[10px] md:text-xs font-medium mb-0.5 md:mb-1"
             style={{ color: message.userColor }}
           >
-            {isCurrentUser ? 'Vous' : message.userName}
+            {isCurrentUser ? 'Vous' : displayName}
           </span>
         )}
         <div
-          className={`px-4 py-2 rounded-lg text-sm transition-colors ${isCurrentUser
+          className={`px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm transition-colors ${isCurrentUser
             ? 'bg-primary text-white shadow-sm'
             : 'text-text-main dark:text-slate-100 border border-black/5 dark:border-white/5'
             }`}
@@ -334,7 +339,7 @@ function ChatMessageItem({ message, isCurrentUser, showAvatar }: ChatMessageItem
         >
           {message.content}
         </div>
-        <span className="text-xs text-text-muted dark:text-slate-500 mt-1">
+        <span className="text-[10px] md:text-xs text-text-muted dark:text-slate-500 mt-0.5 md:mt-1">
           {formatRelativeTime(message.timestamp)}
         </span>
       </div>

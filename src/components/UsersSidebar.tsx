@@ -56,20 +56,22 @@ export function UsersSidebar() {
   };
 
   return (
-    <aside className="w-72 border-r border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0">
+    <aside className="w-64 md:w-72 border-r border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0 min-w-0">
       {/* Users list */}
-      <div className="p-5 border-b border-border-light dark:border-border-dark">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-text-muted dark:text-slate-500 mb-5 flex items-center gap-2">
+      <div className="p-4 md:p-5 border-b border-border-light dark:border-border-dark">
+        <h2 className="text-xs md:text-sm font-bold uppercase tracking-wider text-text-muted dark:text-slate-500 mb-4 md:mb-5 flex items-center gap-2">
           <Users className="w-4 h-4" />
           Collaborateurs ({onlineUsers.length})
         </h2>
 
-        <div className="space-y-5">
+        <div className="space-y-4 md:space-y-5">
           <AnimatePresence mode="popLayout">
             {displayUsers.map((user) => {
               const isCurrentUser = user.id === currentUserId;
               const status = statusConfig[user.status];
               const isTyping = user.status === 'typing';
+              // Get first word of name
+              const displayName = user.name.split(' ')[0];
 
               return (
                 <motion.div
@@ -81,28 +83,28 @@ export function UsersSidebar() {
                   className={`flex items-center justify-between group ${user.status === 'idle' ? 'opacity-75' : ''
                     }`}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 md:gap-4">
                     {/* Avatar Flat Design with status indicator */}
                     <div className="relative">
                       <div
-                        className="size-12 rounded-full border-2 p-0.5 flex items-center justify-center text-white font-bold text-xl shadow-sm"
+                        className="size-10 md:size-12 rounded-full border-2 p-0.5 flex items-center justify-center text-white font-bold text-lg md:text-xl shadow-sm"
                         style={{ backgroundColor: user.color, borderColor: 'white' }}
                       >
                         {user.name.charAt(0)}
                       </div>
                       {/* Status dot */}
                       <div
-                        className={`absolute bottom-0 right-0 size-3.5 ${status.dot} border-2 border-sidebar-bg dark:border-sidebar-dark rounded-full`}
+                        className={`absolute bottom-0 right-0 size-3 md:size-3.5 ${status.dot} border-2 border-sidebar-bg dark:border-sidebar-dark rounded-full`}
                       />
                     </div>
 
                     {/* User info */}
                     <div>
-                      <p className="text-base font-semibold text-text-main dark:text-slate-100 flex items-center gap-1">
-                        {isCurrentUser ? 'Vous' : user.name}
+                      <p className="text-sm md:text-base font-semibold text-text-main dark:text-slate-100 flex items-center gap-1">
+                        {isCurrentUser ? 'Vous' : displayName}
                       </p>
                       <p
-                        className={`text-xs font-mono italic ${isTyping
+                        className={`text-[10px] md:text-xs font-mono italic ${isTyping
                           ? 'text-emerald-600 dark:text-emerald-500'
                           : user.status === 'offline'
                             ? 'text-red-500 dark:text-red-400'
@@ -135,7 +137,7 @@ export function UsersSidebar() {
                   {/* Actions count */}
                   <Badge
                     variant="secondary"
-                    className="text-xs bg-gray-200 dark:bg-border-dark text-text-muted dark:text-slate-400 font-mono px-2 py-1"
+                    className="text-[10px] md:text-xs bg-gray-200 dark:bg-border-dark text-text-muted dark:text-slate-400 font-mono px-1.5 md:px-2 py-0.5 md:py-1"
                   >
                     {user.actionsCount} ops
                   </Badge>
@@ -146,23 +148,23 @@ export function UsersSidebar() {
         </div>
       </div>
 
-      {/* Session info */}
-      <div className="p-5 mt-auto">
-        <div className="bg-blue-50 dark:bg-primary/5 border border-blue-100 dark:border-primary/20 rounded-lg p-4">
-          <p className="text-sm font-bold text-primary uppercase mb-3">
+      {/* Session info and Disconnect button at bottom */}
+      <div className="p-4 md:p-5 mt-auto">
+        <div className="bg-blue-50 dark:bg-primary/5 border border-blue-100 dark:border-primary/20 rounded-lg p-3 md:p-4">
+          <p className="text-xs md:text-sm font-bold text-primary uppercase mb-2 md:mb-3">
             Session Info
           </p>
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-text-muted dark:text-slate-400 font-mono">
+          <div className="space-y-1.5 md:space-y-2">
+            <div className="flex justify-between text-[10px] md:text-xs text-text-muted dark:text-slate-400 font-mono">
               <span>Session ID:</span>
               <span className="text-text-main dark:text-slate-200 font-semibold">
                 {session.id}
               </span>
             </div>
-            <div className="flex justify-between text-xs text-text-muted dark:text-slate-400 font-mono">
+            <div className="flex justify-between text-[10px] md:text-xs text-text-muted dark:text-slate-400 font-mono">
               <span>Duration:</span>
               <span className="text-text-main dark:text-slate-200 font-semibold flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
+                <Clock className="w-3 h-3 md:w-3.5 md:h-3.5" />
                 {formatDuration(session.duration)}
               </span>
             </div>
@@ -170,12 +172,12 @@ export function UsersSidebar() {
         </div>
 
         {/* Disconnect/Reconnect button */}
-        <div className="mt-4">
+        <div className="mt-3 md:mt-4">
           {isConnected ? (
             <Button
               onClick={handleDisconnect}
               variant="outline"
-              className="w-full flex items-center justify-center gap-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+              className="w-full flex items-center justify-center gap-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 text-xs md:text-sm"
             >
               <LogOut className="w-4 h-4" />
               Se déconnecter
@@ -183,7 +185,7 @@ export function UsersSidebar() {
           ) : (
             <Button
               onClick={handleReconnect}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm"
             >
               <CheckCircle className="w-4 h-4" />
               Se reconnecter
