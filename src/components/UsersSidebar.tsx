@@ -5,7 +5,7 @@ import { useThemeStore } from '@/features/theme/useThemeStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Clock, LogOut, CheckCircle, Sun, Moon } from 'lucide-react';
+import { Users, Clock, LogOut, CheckCircle, Sun, Moon, Pencil } from 'lucide-react';
 
 const statusConfig = {
   online: { dot: 'bg-emerald-500', label: 'online' },
@@ -161,8 +161,9 @@ export function UsersSidebar() {
                   {/* Actions count */}
                   <Badge
                     variant="secondary"
-                    className="text-[10px] md:text-xs bg-gray-200 dark:bg-border-dark text-text-muted dark:text-slate-400 font-mono px-1.5 md:px-2 py-0.5 md:py-1"
+                    className="text-[10px] md:text-xs bg-gray-200 dark:bg-border-dark text-text-muted dark:text-slate-400 font-mono px-1.5 md:px-2 py-0.5 md:py-1 flex items-center gap-1"
                   >
+                    <Pencil className="w-3 h-3" />
                     {user.actionsCount} ops
                   </Badge>
                 </motion.div>
