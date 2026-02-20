@@ -235,14 +235,14 @@ export function EditorPanel() {
         />
       </div>
 
-      {/* Floating latency indicator - seulement visible quand connecté */}
+      {/* Floating latency indicator - seulement visible sur desktop et quand connecté */}
       <AnimatePresence>
         {isConnected && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="absolute bottom-6 right-6 flex items-center gap-2 bg-white/90 dark:bg-sidebar-dark/90 backdrop-blur border border-border-light dark:border-border-dark px-3 py-1.5 rounded-full text-xs text-text-muted dark:text-slate-400 shadow-sm z-20"
+            className="hidden md:flex absolute bottom-6 right-6 items-center gap-2 bg-white/90 dark:bg-sidebar-dark/90 backdrop-blur border border-border-light dark:border-border-dark px-3 py-1.5 rounded-full text-xs text-text-muted dark:text-slate-400 shadow-sm z-20"
           >
             <Zap className="w-4 h-4 text-primary" />
             <span>Latence Réseau :</span>

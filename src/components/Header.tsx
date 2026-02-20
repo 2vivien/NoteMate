@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEditorStore } from '@/features/editor/useEditorStore';
 import { useNetworkStore } from '@/features/network/useNetworkStore';
 import { useThemeStore } from '@/features/theme/useThemeStore';
+import { useUsersStore } from '@/features/users/useUsersStore';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,8 @@ import {
   CheckCircle,
   AlertTriangle,
   X,
+  User,
+  LogOut,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -36,6 +39,7 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
 
   const isConnected = useNetworkStore((state) => state.isConnected);
   const isSyncing = useNetworkStore((state) => state.isSyncing);
+  const setConnected = useNetworkStore((state) => state.setConnected);
 
   const packetLoss = useNetworkStore((state) => state.packetLoss);
   const latency = useNetworkStore((state) => state.latency);
@@ -45,12 +49,20 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
   const theme = useThemeStore((state) => state.theme);
   const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
+  const currentUser = useUsersStore((state) => {
+    const users = state.users;
+    const currentUserId = state.currentUserId;
+    return users.find(u => u.id === currentUserId);
+  });
+
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(documentInfo.name);
   const inputRef = useRef<HTMLInputElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
 
   const [showPublishSuccess, setShowPublishSuccess] = useState(false);
   const [showOfflineWarning, setShowOfflineWarning] = useState(false);
+  const [showProfilePopup, setShowProfilePopup] = useState(false);
 
   // Get first word of document name
   const displayDocName = documentInfo.name.split(' ')[0];
@@ -203,6 +215,87 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
           <CloudUpload className="w-4 h-4 md:w-5 md:h-5" />
           <span className="hidden sm:inline">Publier</span>
         </Button>
+
+        {/* Profile button - Desktop only */}
+        {!isMobile && (
+          <div className="relative">
+            <Button
+              ref={profileButtonRef}
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowProfilePopup(!showProfilePopup)}
+              className="h-9 w-9 md:h-10 md:w-10 rounded-full overflow-hidden border-2 border-transparent hover:border-primary/50 transition-all"
+            >
+              {currentUser ? (
+                <div
+                  className="size-full rounded-full flex items-center justify-center text-white font-bold text-sm"
+                  style={{ backgroundColor: currentUser.color }}
+                >
+                  {currentUser.name.charAt(0)}
+                </div>
+              ) : (
+                <User className="w-5 h-5" />
+              )}
+            </Button>
+
+            {/* Profile Popup */}
+            <AnimatePresence>
+              {showProfilePopup && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                  className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-border-light dark:border-border-dark overflow-hidden z-50"
+                >
+                  <div className="p-4 border-b border-border-light dark:border-border-dark">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="size-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                        style={{ backgroundColor: currentUser?.color || '#10b981' }}
+                      >
+                        {currentUser?.name.charAt(0) || 'V'}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-text-main dark:text-white">
+                          {currentUser?.name || 'Vivien'}
+                        </p>
+                        <p className="text-xs text-text-muted dark:text-slate-400">
+                          {isConnected ? 'En ligne' : 'Hors ligne'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    {isConnected ? (
+                      <Button
+                        onClick={() => {
+                          setConnected(false);
+                          setShowProfilePopup(false);
+                        }}
+                        variant="ghost"
+                        className="w-full flex items-center justify-start gap-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Se déconnecter
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          setConnected(true);
+                          setShowProfilePopup(false);
+                        }}
+                        className="w-full flex items-center justify-start gap-3 bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Se reconnecter
+                      </Button>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {/* Edit Document Name Modal */}

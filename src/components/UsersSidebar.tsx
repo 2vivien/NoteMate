@@ -196,27 +196,29 @@ export function UsersSidebar() {
           </div>
         </div>
 
-        {/* Disconnect/Reconnect button */}
-        <div className="mt-4 md:mt-5">
-          {isConnected ? (
-            <Button
-              onClick={handleDisconnect}
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 text-xs md:text-sm"
-            >
-              <LogOut className="w-4 h-4" />
-              Se déconnecter
-            </Button>
-          ) : (
-            <Button
-              onClick={handleReconnect}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm"
-            >
-              <CheckCircle className="w-4 h-4" />
-              Se reconnecter
-            </Button>
-          )}
-        </div>
+        {/* Disconnect/Reconnect button - Only visible on mobile */}
+        {isMobile && (
+          <div className="mt-4 md:mt-5">
+            {isConnected ? (
+              <Button
+                onClick={handleDisconnect}
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 text-xs md:text-sm"
+              >
+                <LogOut className="w-4 h-4" />
+                Se déconnecter
+              </Button>
+            ) : (
+              <Button
+                onClick={handleReconnect}
+                className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Se reconnecter
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </aside>
   );

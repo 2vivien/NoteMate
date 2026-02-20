@@ -219,14 +219,14 @@ export function LogsChatPanel() {
               </div>
 
               {/* Chat input - always visible at bottom */}
-              <div className="shrink-0 p-3 md:p-4 border-t border-border-light dark:border-border-dark bg-white dark:bg-sidebar-dark">
+              <div className="shrink-0 p-3 md:p-4 border-t border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark">
                 <div className="relative">
                   <Input
                     value={messageInput}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     placeholder="Écrire un message..."
-                    className="w-full bg-sidebar-bg dark:bg-background-dark border-border-light dark:border-border-dark rounded-lg text-sm py-2.5 md:py-3 pl-3 md:pl-4 pr-10 md:pr-12 focus:ring-1 focus:ring-primary focus:border-primary"
+                    className="w-full bg-white dark:bg-slate-800 border-border-light dark:border-border-dark rounded-lg text-sm py-2.5 md:py-3 pl-3 md:pl-4 pr-10 md:pr-12 focus:ring-1 focus:ring-primary focus:border-primary text-text-main dark:text-slate-100"
                   />
                   <Button
                     variant="ghost"
