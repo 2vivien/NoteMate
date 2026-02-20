@@ -64,6 +64,9 @@ export function EditorPanel() {
         // Set Vivien as typing in the store
         userStore.setUserTyping(vivienId, true);
 
+        // Increment ops counter on every real keystroke
+        userStore.incrementActions(vivienId);
+
         // Clear typing status after 2 seconds of inactivity
         if (vivienTypingTimeoutRef.current) clearTimeout(vivienTypingTimeoutRef.current);
         vivienTypingTimeoutRef.current = setTimeout(() => {
@@ -80,7 +83,6 @@ export function EditorPanel() {
             'a mis à jour les notes',
             `à la ligne ${editor.getPosition()?.lineNumber}`
           );
-          userStore.incrementActions(vivienId);
 
           vivienLogTimeoutRef.current = setTimeout(() => {
             vivienLogTimeoutRef.current = null;
