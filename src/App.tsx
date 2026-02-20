@@ -63,13 +63,13 @@ function App() {
 
         {/* Mobile Overlays (using Sheets for native feel) */}
         <Sheet open={mobilePanel === 'users'} onOpenChange={(open) => !open && setMobilePanel(null)}>
-          <SheetContent side="left" className="p-0 w-72 border-r-0">
+          <SheetContent side="left" className="p-0 w-72 border-r-0 h-full">
             <UsersSidebar />
           </SheetContent>
         </Sheet>
 
         <Sheet open={mobilePanel === 'activity'} onOpenChange={(open) => !open && setMobilePanel(null)}>
-          <SheetContent side="right" className="p-0 w-80 border-l-0">
+          <SheetContent side="right" className="p-0 w-80 border-l-0 h-full max-h-full">
             <LogsChatPanel />
           </SheetContent>
         </Sheet>

@@ -122,7 +122,7 @@ export function LogsChatPanel() {
   };
 
   return (
-    <aside className="w-80 md:w-96 border-l border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0 min-w-0">
+    <aside className="w-80 md:w-96 border-l border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0 min-w-0 h-full">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full min-h-0">
         {/* Tab headers */}
         <div className="flex border-b border-border-light dark:border-border-dark h-12 md:h-14 shrink-0">
