@@ -196,7 +196,7 @@ export function EditorPanel() {
   }, [content, version]); // Added version to dependency to catch bot updates reliably
 
   return (
-    <section className="flex-1 bg-editor-bg dark:bg-background-dark flex flex-col relative">
+    <section className="flex-1 bg-editor-bg dark:bg-background-dark flex flex-col relative min-w-0">
       {/* Offline warning banner */}
       <AnimatePresence>
         {!isConnected && (
@@ -204,12 +204,11 @@ export function EditorPanel() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 py-2 text-amber-700 dark:text-amber-400 text-xs"
+            className="flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800 px-4 py-3 text-amber-700 dark:text-amber-400 text-sm font-medium"
           >
-            <WifiOff className="w-4 h-4" />
-            <span className="font-medium">Vous êtes hors ligne</span>
-            <span className="text-amber-600 dark:text-amber-500">—</span>
-            <span className="text-amber-600 dark:text-amber-500">Vos modifications ne seront pas synchronisées</span>
+            <WifiOff className="w-5 h-5" />
+            <span>Vous êtes hors ligne</span>
+            <span className="text-amber-600 dark:text-amber-500 hidden sm:inline">— Vos modifications ne seront pas synchronisées</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -226,7 +225,10 @@ export function EditorPanel() {
             readOnly: false,
             wordWrap: 'on',
             lineNumbers: 'on',
-            minimap: { enabled: false }
+            minimap: { enabled: false },
+            fontSize: 16,
+            fontFamily: 'Fira Code, monospace',
+            padding: { top: 20, bottom: 20 }
           }}
         />
       </div>

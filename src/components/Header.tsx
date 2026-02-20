@@ -115,12 +115,12 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
   const canRedo = localRedoStack.length > 0;
 
   return (
-    <header className="flex items-center justify-between border-b border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark px-2 md:px-4 py-2 h-14 shrink-0 overflow-hidden">
+    <header className="flex items-center justify-between border-b border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark px-3 md:px-6 py-3 h-16 md:h-18 shrink-0">
       {/* Left section */}
-      <div className="flex items-center gap-2 md:gap-6 shrink-0">
+      <div className="flex items-center gap-3 md:gap-6 shrink-0">
         {/* Mobile Menu Toggle */}
         {isMobile && (
-          <Button variant="ghost" size="icon" onClick={onOpenUsers} className="h-9 w-9">
+          <Button variant="ghost" size="icon" onClick={onOpenUsers} className="h-10 w-10 shrink-0">
             <Menu className="w-5 h-5" />
           </Button>
         )}
@@ -135,12 +135,12 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
               onChange={(e) => setEditValue(e.target.value)}
               onBlur={handleSaveName}
               onKeyDown={handleKeyDown}
-              className="h-7 w-32 md:w-48 text-xs md:text-sm"
+              className="h-8 w-36 md:w-52 text-sm"
             />
           ) : (
             <h1
               onClick={() => setIsEditing(true)}
-              className="text-xs md:text-sm font-semibold tracking-tight text-text-main dark:text-slate-100 cursor-pointer hover:text-primary transition-colors truncate max-w-[80px] xs:max-w-[120px] md:max-w-none"
+              className="text-sm md:text-base font-semibold tracking-tight text-text-main dark:text-slate-100 cursor-pointer hover:text-primary transition-colors truncate max-w-[100px] xs:max-w-[150px] md:max-w-none"
               title="Cliquer pour modifier"
             >
               {documentInfo.name}
@@ -148,7 +148,7 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
           )}
         </div>
 
-        {/* Unified Status indicator */}
+        {/* Unified Status indicator - Compact on mobile, full on desktop */}
         <motion.div
           initial={false}
           animate={{
@@ -156,17 +156,20 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
             backgroundColor: showPacketLossAlert ? '#fee2e2' : '',
           }}
           transition={{ duration: 0.3 }}
-          className={`flex items-center gap-1.5 md:gap-2 px-1.5 md:px-2.5 py-1 rounded-md text-[10px] md:text-xs font-semibold border transition-all shadow-sm ${!isConnected
+          title={!isConnected ? 'Déconnecté' : isSyncing ? 'Synchronisation...' : `Connecté (${latency}ms)`}
+          className={`flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold border transition-all shadow-sm cursor-pointer ${!isConnected
             ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 border-red-100 dark:border-red-500/20'
             : isSyncing
               ? 'bg-blue-50 dark:bg-primary/20 text-primary dark:text-primary-foreground border-blue-100 dark:border-primary/30'
               : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-100 dark:border-emerald-500/20'
             }`}
         >
-          <span className={`size-1.5 md:size-2 rounded-full ${!isConnected ? 'bg-red-500' :
+          {/* Mobile: Only colored dot */}
+          <span className={`size-3 md:size-2.5 rounded-full ${!isConnected ? 'bg-red-500' :
             isSyncing ? 'bg-primary animate-pulse' : 'bg-emerald-500'
             }`} />
-          <span className="inline">
+          {/* Desktop: Full text */}
+          <span className="hidden md:inline">
             {!isConnected ? 'DÉCONNECTÉ' :
               isSyncing ? 'SYNCHRONISATION...' : `CONNECTÉ (${latency}ms)`}
           </span>
@@ -174,28 +177,28 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
       </div>
 
       {/* Right section */}
-      <div className="flex items-center gap-1 md:gap-2 shrink-0">
-        {/* Undo/Redo - Always visible or at least more visible */}
+      <div className="flex items-center gap-2 md:gap-3 shrink-0">
+        {/* Undo/Redo - Always visible */}
         <div className="flex items-center gap-1 bg-gray-200/50 dark:bg-border-dark/30 p-1 rounded-lg shrink-0">
           <Button
             variant="ghost"
             size="icon"
             onClick={undo}
             disabled={!canUndo}
-            className="h-7 w-7 md:h-8 md:w-8 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary transition-all duration-200 active:scale-90 hover:scale-110 disabled:opacity-30"
+            className="h-8 w-8 md:h-9 md:w-9 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary transition-all duration-200 active:scale-90 hover:scale-110 disabled:opacity-30"
             title="Annuler"
           >
-            <Undo className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <Undo className="w-4 h-4 md:w-5 md:h-5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={redo}
             disabled={!canRedo}
-            className="h-7 w-7 md:h-8 md:w-8 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary transition-all duration-200 active:scale-90 hover:scale-110 disabled:opacity-30"
+            className="h-8 w-8 md:h-9 md:w-9 hover:bg-primary/10 dark:hover:bg-primary/20 hover:text-primary transition-all duration-200 active:scale-90 hover:scale-110 disabled:opacity-30"
             title="Rétablir"
           >
-            <Redo className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <Redo className="w-4 h-4 md:w-5 md:h-5" />
           </Button>
         </div>
 
@@ -204,30 +207,30 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
-          className="h-8 w-8"
+          className="h-9 w-9 md:h-10 md:w-10"
           title={theme === 'light' ? 'Passer au mode sombre' : 'Passer au mode clair'}
         >
           {theme === 'light' ? (
-            <Moon className="w-4 h-4" />
+            <Moon className="w-5 h-5" />
           ) : (
-            <Sun className="w-4 h-4" />
+            <Sun className="w-5 h-5" />
           )}
         </Button>
 
         {/* Mobile Chat Toggle */}
         {isMobile && (
-          <Button variant="ghost" size="icon" onClick={onOpenActivity} className="h-9 w-9 relative">
+          <Button variant="ghost" size="icon" onClick={onOpenActivity} className="h-10 w-10 relative">
             <MessageSquare className="w-5 h-5" />
             <span className="absolute top-2 right-2 size-2 bg-primary rounded-full border border-white" />
           </Button>
         )}
 
-        {/* Push changes button - Text hidden on small screens */}
+        {/* Push changes button */}
         <Button
           onClick={handlePublish}
-          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-2 md:px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium shadow-sm transition-colors"
+          className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-medium shadow-sm transition-colors"
         >
-          <CloudUpload className="w-4 h-4" />
+          <CloudUpload className="w-4 h-4 md:w-5 md:h-5" />
           <span className="hidden sm:inline">Publier</span>
         </Button>
 
@@ -235,7 +238,7 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
         <div className="relative">
           <button
             onClick={() => setShowProfilePopup(!showProfilePopup)}
-            className="profile-avatar ml-1 md:ml-4 size-7 md:size-8 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-xs md:text-sm shadow-sm shrink-0 hover:ring-2 hover:ring-primary/50 transition-all"
+            className="profile-avatar ml-2 md:ml-4 size-9 md:size-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-sm md:text-base shadow-sm shrink-0 hover:ring-2 hover:ring-primary/50 transition-all"
             style={{ backgroundColor: '#10b981' }}
           >
             V
