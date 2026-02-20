@@ -15,7 +15,6 @@ import {
   Moon,
   MessageSquare,
   Menu,
-  LogOut,
   CheckCircle,
   AlertTriangle,
 } from 'lucide-react';
@@ -36,7 +35,6 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
 
   const isConnected = useNetworkStore((state) => state.isConnected);
   const isSyncing = useNetworkStore((state) => state.isSyncing);
-  const setConnected = useNetworkStore((state) => state.setConnected);
 
   const packetLoss = useNetworkStore((state) => state.packetLoss);
   const latency = useNetworkStore((state) => state.latency);
@@ -52,7 +50,6 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Popup states
-  const [showProfilePopup, setShowProfilePopup] = useState(false);
   const [showPublishSuccess, setShowPublishSuccess] = useState(false);
   const [showOfflineWarning, setShowOfflineWarning] = useState(false);
 
@@ -62,18 +59,6 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
       inputRef.current.select();
     }
   }, [isEditing]);
-
-  // Close popups when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('.profile-popup-container') && !target.closest('.profile-avatar')) {
-        setShowProfilePopup(false);
-      }
-    };
-    globalThis.document.addEventListener('mousedown', handleClickOutside);
-    return () => globalThis.document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleSaveName = () => {
     if (editValue.trim()) {
@@ -89,16 +74,6 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
       setEditValue(documentInfo.name);
       setIsEditing(false);
     }
-  };
-
-  const handleDisconnect = () => {
-    setConnected(false);
-    setShowProfilePopup(false);
-  };
-
-  const handleReconnect = () => {
-    setConnected(true);
-    setShowProfilePopup(false);
   };
 
   const handlePublish = () => {
@@ -233,66 +208,6 @@ export function Header({ onOpenUsers, onOpenActivity }: HeaderProps) {
           <CloudUpload className="w-4 h-4 md:w-5 md:h-5" />
           <span className="hidden sm:inline">Publier</span>
         </Button>
-
-        {/* Vivien avatar with profile popup */}
-        <div className="relative">
-          <button
-            onClick={() => setShowProfilePopup(!showProfilePopup)}
-            className="profile-avatar ml-2 md:ml-4 size-9 md:size-10 rounded-full border-2 border-white flex items-center justify-center text-white font-bold text-sm md:text-base shadow-sm shrink-0 hover:ring-2 hover:ring-primary/50 transition-all"
-            style={{ backgroundColor: '#10b981' }}
-          >
-            V
-          </button>
-
-          {/* Profile Popup */}
-          <AnimatePresence>
-            {showProfilePopup && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                transition={{ duration: 0.15 }}
-                className="profile-popup-container fixed right-2 md:right-4 top-14 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-700 z-[9999] overflow-hidden"
-              >
-                <div className="p-4 border-b border-gray-200 dark:border-slate-700">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="size-10 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                      style={{ backgroundColor: '#10b981' }}
-                    >
-                      V
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900 dark:text-white">Vivien</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {isConnected ? 'En ligne' : 'Hors ligne'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-2">
-                  {isConnected ? (
-                    <button
-                      onClick={handleDisconnect}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Se déconnecter</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleReconnect}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-sm text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Se reconnecter</span>
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
       </div>
 
       {/* Publish Success Toast */}

@@ -1,4 +1,4 @@
-vas y# NoteMate - Éditeur de Texte Collaboratif
+# NoteMate - Éditeur de Texte Collaboratif
 
 Une interface d'éditeur de texte collaboratif simulant des interactions multi-utilisateurs en temps réel avec gestion de la latence réseau et des erreurs.
 

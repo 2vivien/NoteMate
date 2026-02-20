@@ -8,7 +8,6 @@ import {
   Timer,
   AlignLeft,
   Code,
-  Wifi,
   Download,
   AlertTriangle,
   Activity

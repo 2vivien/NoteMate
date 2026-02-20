@@ -2,7 +2,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUsersStore } from '@/features/users/useUsersStore';
 import { useNetworkStore } from '@/features/network/useNetworkStore';
 import { Badge } from '@/components/ui/badge';
-import { Users, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, Clock, LogOut, CheckCircle } from 'lucide-react';
 
 const statusConfig = {
   online: { dot: 'bg-emerald-500', label: 'online' },
@@ -36,6 +37,7 @@ export function UsersSidebar() {
   const currentUserId = useUsersStore((state) => state.currentUserId);
   const session = useNetworkStore((state) => state.session);
   const isConnected = useNetworkStore((state) => state.isConnected);
+  const setConnected = useNetworkStore((state) => state.setConnected);
 
   // Si déconnecté, tous les utilisateurs apparaissent hors ligne
   const displayUsers = users.map((u) => ({
@@ -44,6 +46,14 @@ export function UsersSidebar() {
   }));
 
   const onlineUsers = displayUsers.filter((u) => u.status !== 'offline');
+
+  const handleDisconnect = () => {
+    setConnected(false);
+  };
+
+  const handleReconnect = () => {
+    setConnected(true);
+  };
 
   return (
     <aside className="w-72 border-r border-border-light dark:border-border-dark bg-sidebar-bg dark:bg-sidebar-dark flex flex-col shrink-0">
@@ -157,6 +167,28 @@ export function UsersSidebar() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Disconnect/Reconnect button */}
+        <div className="mt-4">
+          {isConnected ? (
+            <Button
+              onClick={handleDisconnect}
+              variant="outline"
+              className="w-full flex items-center justify-center gap-2 text-red-600 border-red-200 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+            >
+              <LogOut className="w-4 h-4" />
+              Se déconnecter
+            </Button>
+          ) : (
+            <Button
+              onClick={handleReconnect}
+              className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              <CheckCircle className="w-4 h-4" />
+              Se reconnecter
+            </Button>
+          )}
         </div>
       </div>
     </aside>
